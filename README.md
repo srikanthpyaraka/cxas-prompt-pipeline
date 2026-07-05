@@ -29,6 +29,7 @@ sync.
 | `ASSESSMENT.md` | Report from running the assessor on this package (before/after scores + fixes). |
 | `shared/ground-truth.md`   | Platform + cxas-scrapi facts. Prepended to every stage. |
 | `shared/output-contract.md`| Global output rules (artifact envelope, IDs, assumptions, dual-emit, delimited input, self-check). |
+| `examples/order-support/`  | A full worked run (sample PRD → all six stage artifacts). Start here to see output. |
 
 ## How to run
 
