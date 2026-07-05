@@ -30,13 +30,65 @@ sync.
 
 ## How to run
 
-**Automated (recommended):** Use `00-orchestrator.prompt.md` as the system prompt. It
-prepends `shared/ground-truth.md` + `shared/output-contract.md`, then invokes each stage
-prompt in order, passing the prior stage's artifact forward. It will not cross a ◆GATE◆
-without the required condition (P0 questions answered; lint findings resolved + user OK).
+This package is a set of **prompts**, not a script. "Running it" means loading the right
+prompt files as context for an LLM (Claude, Gemini, etc.) and giving it your PRD. It is
+model-agnostic.
 
-**Manual / stage-by-stage:** Prepend both `shared/*.md` files, then paste one stage
-prompt plus the previous stage's output artifact. Good for iterating on a single stage.
+### Option A — Automated (recommended): one session drives all 6 stages
+
+In Claude Code, from the repo folder:
+
+```bash
+cd cx-agent-builder
+claude
+```
+
+Then send this as your first message:
+
+```
+Read and follow these files as your instructions, in this order:
+shared/ground-truth.md, shared/output-contract.md, 00-orchestrator.prompt.md.
+Act as the orchestrator they describe. Then begin STAGE 1 with the PRD below.
+
+<PASTE YOUR PRD / NOTES / TICKETS / BULLETS HERE>
+```
+
+The orchestrator then runs Ingest → Interview → Design → Build → Evals → Validate,
+pausing for your confirmation between stages. It will **not** cross a ◆GATE◆ until the
+condition is met (P0 questions answered; lint findings resolved + your sign-off). Answer
+its questions and say "continue" to advance.
+
+### Option B — Manual, one stage at a time
+
+Best for iterating on a single stage. Give the model the two shared files + that stage's
+prompt + the previous stage's output artifact:
+
+```
+Follow shared/ground-truth.md + shared/output-contract.md + 03-design.prompt.md.
+Here is the input artifact from the previous stage:
+
+<PASTE THE RESOLVED_BRIEF ARTIFACT>
+```
+
+### Using it outside Claude Code
+
+- **claude.ai / Claude Desktop:** paste the contents of `shared/ground-truth.md`,
+  `shared/output-contract.md`, and `00-orchestrator.prompt.md` into one message (or
+  attach them), then your PRD.
+- **API:** concatenate those three files as the `system` prompt; send the PRD as the
+  first `user` message.
+- **Gemini / other models:** same idea — the prompts are not Claude-specific.
+
+### What it produces vs. what you still execute
+
+The pipeline **generates** the console runbook + `cxas-scrapi` config tree + Python
+scripts + `cxas` eval commands. You then run those against a real GCP project:
+
+```bash
+pip install cxas-scrapi
+gcloud auth application-default login
+# run the generated scripts / cxas push, cxas lint, cxas test-tools, ...
+```
 
 ## The state machine
 
