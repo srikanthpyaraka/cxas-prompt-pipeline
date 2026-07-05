@@ -25,8 +25,10 @@ sync.
 | `04-build.prompt.md`    | Console runbook **and** scrapi config tree + Python create/update scripts. |
 | `05-evals.prompt.md`    | All 5 eval types, thresholds, coverage %, console steps **and** `cxas` commands. |
 | `06-validate.prompt.md` | **◆GATE◆** `cxas lint` self-audit + full deliverable package + final sign-off. |
+| `PROMPT-ASSESSOR.prompt.md` | Standalone skill: scores ANY prompt vs. Anthropic best practices, gives feedback, rewrites, re-scores until good-to-go. |
+| `ASSESSMENT.md` | Report from running the assessor on this package (before/after scores + fixes). |
 | `shared/ground-truth.md`   | Platform + cxas-scrapi facts. Prepended to every stage. |
-| `shared/output-contract.md`| Global output rules (artifact envelope, IDs, assumptions, dual-emit). |
+| `shared/output-contract.md`| Global output rules (artifact envelope, IDs, assumptions, dual-emit, delimited input, self-check). |
 
 ## How to run
 
@@ -89,6 +91,36 @@ pip install cxas-scrapi
 gcloud auth application-default login
 # run the generated scripts / cxas push, cxas lint, cxas test-tools, ...
 ```
+
+## Prompt Assessor (score, feedback, rewrite any prompt)
+
+`PROMPT-ASSESSOR.prompt.md` is a standalone skill that audits ANY prompt against
+Anthropic's [prompt-engineering best practices](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices):
+it scores the prompt on a 0–100 rubric, gives severity-ranked feedback, rewrites it, then
+re-scores in a loop (up to 3 rounds) until it is "good to go" (≥ 90, no criterion < 7, no
+unresolved contradictions).
+
+**Use it:** paste the assessor as your instructions, then drop the prompt to review
+between the input markers:
+
+```
+Follow PROMPT-ASSESSOR.prompt.md.
+
+<prompt_under_review>
+<PASTE THE PROMPT YOU WANT SCORED / IMPROVED HERE>
+</prompt_under_review>
+
+(Optional) Context: intended model, use case, system-prompt vs user-message, hard constraints.
+```
+
+It returns a scorecard, feedback, the rewritten prompt, a changelog, and any residual
+gaps. Everything inside `<prompt_under_review>` is treated as data to evaluate, never as
+instructions.
+
+**Applied to this package:** all stage prompts were run through the assessor and improved
+(delimited input + a verify-before-emit self-check were added to
+`shared/output-contract.md`, so every stage inherits them). See `ASSESSMENT.md` for the
+before/after scorecard.
 
 ## The state machine
 
