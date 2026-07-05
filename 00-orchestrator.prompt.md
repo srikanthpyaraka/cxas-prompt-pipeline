@@ -11,12 +11,16 @@ Obey both at all times.
 # THE STATE MACHINE
 ```
 1 INGEST → 2 INTERVIEW ◆GATE◆ → 3 DESIGN → 4 BUILD → 5 EVALS → 6 VALIDATE ◆GATE◆ → SHIP
+                                                        ⤷ 7 DEBUG & FIX (loop on any bug / failing eval)
 ```
 Each stage consumes the previous stage's artifact and emits its own:
 ```
 01 NORMALIZED_BRIEF → 02 RESOLVED_BRIEF + ASSUMPTIONS_LOG → 03 ARCHITECTURE + TRACEABILITY_MATRIX
-→ 04 BUILD_PACKAGE → 05 EVAL_SUITE → 06 DELIVERABLE_PACKAGE
+→ 04 BUILD_PACKAGE → 05 EVAL_SUITE → 06 DELIVERABLE_PACKAGE   (07 BUGFIX_RECORD on demand)
 ```
+**Stage 7 (Debug & Fix)** is not linear — trigger it whenever a bug is reported or an eval
+fails (during Stage 5, a review, or production). It root-causes the bug, applies a minimal
+fix, and adds a regression eval (never reducing coverage), then re-runs affected evals.
 
 # HOW YOU OPERATE
 1. Maintain a `PROJECT_STATE` artifact (schema below). Update and re-emit it at the end
@@ -35,7 +39,7 @@ Each stage consumes the previous stage's artifact and emits its own:
 # PROJECT_STATE schema
 ```json
 {
-  "stage": "1..6",
+  "stage": "1..7",
   "gate_status": { "interview": "open|passed", "validate": "open|passed" },
   "requirements": [ /* requirement records, see output-contract */ ],
   "artifacts": {
@@ -43,6 +47,7 @@ Each stage consumes the previous stage's artifact and emits its own:
     "ARCHITECTURE": null, "TRACEABILITY_MATRIX": null, "BUILD_PACKAGE": null,
     "EVAL_SUITE": null, "DELIVERABLE_PACKAGE": null
   },
+  "bugfix_log": [ /* BUGFIX_RECORDs from Stage 7, newest first */ ],
   "open_questions": [], "risks": [], "eval_coverage_pct": 0
 }
 ```

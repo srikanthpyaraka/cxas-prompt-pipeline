@@ -25,7 +25,10 @@ sync.
 | `04-build.prompt.md`    | Console runbook **and** scrapi config tree + Python create/update scripts. |
 | `05-evals.prompt.md`    | All 5 eval types, thresholds, coverage %, console steps **and** `cxas` commands. |
 | `06-validate.prompt.md` | **◆GATE◆** `cxas lint` self-audit + full deliverable package + final sign-off. |
+| `07-debug-fix.prompt.md` | On-demand loop: bug/failing-eval → reproduce → root cause → minimal fix → regression eval. |
 | `PROMPT-ASSESSOR.prompt.md` | Standalone skill: scores ANY prompt vs. Anthropic best practices, gives feedback, rewrites, re-scores until good-to-go. |
+| `docs/REVIEW.md` | Independent reviewer's assessment of the package (strengths, risks, verdict). |
+| `docs/DEMO-TALK-TRACK.md` | Demo script + talk track for presenting to GECX developers. |
 | `ASSESSMENT.md` | Report from running the assessor on this package (before/after scores + fixes). |
 | `shared/ground-truth.md`   | Platform + cxas-scrapi facts. Prepended to every stage. |
 | `shared/output-contract.md`| Global output rules (artifact envelope, IDs, assumptions, dual-emit, delimited input, self-check). |
@@ -128,7 +131,11 @@ before/after scorecard.
 
 ```
 1 INGEST → 2 INTERVIEW ◆GATE◆ → 3 DESIGN → 4 BUILD → 5 EVALS → 6 VALIDATE ◆GATE◆ → SHIP
+                                                       ⤷ 7 DEBUG & FIX (loop on any bug / failing eval)
 ```
+Stage 7 is non-linear: run it whenever a bug is reported or an eval fails. It root-causes
+the issue, applies a minimal fix, documents *why it broke and how it was fixed*, and adds
+a regression eval (RED-before / GREEN-after) without reducing coverage.
 
 ## Artifact hand-offs (each stage's OUTPUT is the next stage's INPUT)
 

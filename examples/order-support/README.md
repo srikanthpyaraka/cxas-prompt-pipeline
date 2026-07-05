@@ -18,5 +18,9 @@ produces before running it yourself. All identifiers are fictional — no real
 
 ## How this was produced
 Load `shared/*.md` + `00-orchestrator.prompt.md`, paste [`00-prd.md`](00-prd.md), and let
-the orchestrator run all six stages. This folder is the (lightly trimmed) result. Your own
-run will differ based on how you answer the Stage-2 interview.
+the orchestrator run all six stages. Your own run will differ based on how you answer the
+Stage-2 interview.
+
+> **Provenance:** an authored *reference run* — hand-written to conform to the pipeline
+> prompts' contracts and QA'd against them, not a live orchestrator transcript. It shows
+> the shape/quality the prompts produce. Identifiers are placeholders; no real PII.

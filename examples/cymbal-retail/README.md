@@ -18,6 +18,12 @@ Source: CX Agent Studio → Build → [Sample agents](https://docs.cloud.google.
 | [`04-build-package.md`](04-build-package.md) | 4 Build | Console runbook **and** cxas-scrapi config |
 | [`05-eval-suite.md`](05-eval-suite.md) | 5 Evals | 5 eval types, 17 assets, 100% coverage |
 | [`06-deliverable.md`](06-deliverable.md) | 6 Validate ◆gate◆ | Lint audit + deploy runbook + sign-off |
+| [`07-bugfix.md`](07-bugfix.md) | 7 Debug & Fix | A real eval failure (upsell leaks into checkout) → root cause → minimal fix → regression eval |
+
+> **Provenance:** these artifacts are an authored *reference run* — hand-written to conform
+> to the pipeline prompts' contracts and QA'd against them — not the transcript of a live
+> orchestrator execution. They show the shape and quality the prompts are built to produce.
+> Identifiers are placeholders; no real project or PII.
 
 ## Why this one
 It exercises the hard parts of the platform: a multi-agent (root + sub-agents) design,
