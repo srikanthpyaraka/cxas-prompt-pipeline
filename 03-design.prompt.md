@@ -22,4 +22,17 @@ justify every split.
 Emit `ARCHITECTURE` and `TRACEABILITY_MATRIX` artifact blocks. Then PAUSE and ask the
 user to confirm before Build. Do not emit config yet.
 
+## Example (agent spec + traceability shape)
+<example>
+Agent: `order_status_agent`
+- Goal: resolve "where is my order" without human handoff when data is available.
+- Tools: `get_order_status` (read-only OMS). Guardrails: PII redaction, off-topic refusal.
+- Fallback: if OMS returns no match after 2 turns → offer handoff. Satisfies: R1, R2.
+
+| Req | Design element(s) | Planned eval type(s) |
+|-----|-------------------|----------------------|
+| R1  | order_status_agent + get_order_status tool | Tool Test, Turn Eval, Platform Golden |
+| R2  | PII-redaction guardrail | Turn Eval (no PII leak), Local Simulation |
+</example>
+
 DECIDED / ASSUMED / NEED NEXT.

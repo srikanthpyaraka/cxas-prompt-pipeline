@@ -33,10 +33,12 @@ redistribute its weight proportionally across the applicable criteria. Weights:
 | 4 | **Examples (multishot)** | 10 | 3–5 relevant, diverse examples wrapped in `<example>`/`<examples>` tags where examples would help; edge cases covered. (N/A if examples add no value.) |
 | 5 | **Sequential steps / decomposition** | 8 | When order/completeness matters, steps are numbered; complex tasks are broken down. |
 | 6 | **Output format control** | 10 | Desired format is specified; says what TO do (not just what not to do); uses format indicators / matches prompt style to desired output. |
-| 7 | **Reasoning & self-check** | 8 | Guides thinking where the task is complex ("think/consider/reason through"); asks the model to verify its answer against criteria before finishing. |
+| 7 | **Reasoning & self-check** | 10 | Guides thinking where the task is complex ("think/consider/reason through"); asks the model to verify its answer against criteria before finishing. |
 | 8 | **Positive & grounded constraints** | 7 | Constraints are phrased positively and justified; long-doc tasks ground in quotes; anti-hallucination guidance where facts matter. |
 | 9 | **Tool / agentic guidance** | 8 | Explicit about acting vs. suggesting; parallel-tool and autonomy/safety guidance; no over-/under-triggering language. (N/A if non-agentic.) |
-| 10 | **Robustness & safety** | 7 | Handles ambiguity, edge cases, and refusals; avoids over-engineering; defines success criteria; no contradictory instructions. |
+| 10 | **Robustness & safety** | 10 | Handles ambiguity, edge cases, and refusals; avoids over-engineering; defines success criteria; no contradictory instructions. |
+
+Weights sum to 100 (10+15+12+10+8+10+10+7+8+10).
 
 **Bands:** 90–100 Excellent (good to go) · 75–89 Strong (minor fixes) · 60–74 Serviceable
 (notable gaps) · 40–59 Weak · <40 Poor.

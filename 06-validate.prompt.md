@@ -27,4 +27,13 @@ Present a final summary: requirements covered, open assumptions, lint blockers =
 eval coverage %. Ask the user to confirm sign-off. Only then state
 `GATE: validate PASSED — SHIP-READY`.
 
+## Example (lint-finding shape)
+<example>
+| Sev | Rule | Location | Finding | Fix |
+|-----|------|----------|---------|-----|
+| Blocker | grounding | order_status_agent | Answers order status from generation, no tool bound | Bind `get_order_status`; forbid free-generated status |
+| Warning | handoff | order_status_agent | No handoff trigger defined | Add "escalate after 2 failed lookups" |
+</example>
+Blockers open: 0 required to pass the gate.
+
 DECIDED / ASSUMED / NEED NEXT.

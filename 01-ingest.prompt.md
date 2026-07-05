@@ -24,4 +24,19 @@ Emit `NORMALIZED_BRIEF` (fields as a table + the requirements list as JSON recor
 `artifact:NORMALIZED_BRIEF` block. Summarize: # requirements by priority, # UNKNOWNs,
 top risks. Do not proceed to design.
 
+## Example (shape only — match this, don't copy the content)
+<example>
+| Field | Value |
+|-------|-------|
+| Business goal | Deflect 40% of order-status contacts (KPI: containment ≥ 0.40) |
+| Channels / languages | Web chat; en-US only | ❓UNKNOWN: voice? |
+
+```json
+[ {"id":"R1","text":"Answer 'where is my order' from the OMS","type":"functional",
+   "priority":"P0","status":"known","source":"PRD §2.1"},
+  {"id":"R2","text":"Redact card numbers in transcripts","type":"guardrail",
+   "priority":"P0","status":"unknown","source":"inferred — not in PRD"} ]
+```
+</example>
+
 DECIDED / ASSUMED / NEED NEXT.

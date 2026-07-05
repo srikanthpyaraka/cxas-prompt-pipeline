@@ -26,4 +26,12 @@ those requirements `assumed`. Update requirement records' `status`.
 2. When the gate passes: emit `RESOLVED_BRIEF` (updated brief + requirement records) and
    `ASSUMPTIONS_LOG` in artifact blocks, and state `GATE: interview PASSED`.
 
+## Example (question-table shape)
+<example>
+| # | P | Question | Why it changes the design | Default if unanswered |
+|---|---|----------|---------------------------|-----------------------|
+| 1 | P0 | Can the agent call the OMS API, or only a read-only cache? | Determines tool auth + whether cancellations are in scope | Read-only cache; no write actions |
+| 2 | P0 | What is the target containment rate? | Sets the pass/fail bar for Stage-5 evals | ≥ 0.40 |
+</example>
+
 DECIDED / ASSUMED / NEED NEXT.

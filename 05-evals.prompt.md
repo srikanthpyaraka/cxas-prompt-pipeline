@@ -28,4 +28,18 @@ the uncovered requirements and add evals until covered.
 Emit `EVAL_SUITE` (assets + thresholds + run commands + coverage report) in an artifact
 block. Then PAUSE for confirmation before Validate.
 
+## Example (eval case + coverage shape)
+<example>
+Tool Test `TT-01` (get_order_status): input `{order_id:"A123"}` → expect status field
+present; failure path input `{order_id:"NOPE"}` → expect graceful "not found", no crash.
+Threshold: tool-call accuracy ≥ 0.95. Runs via `cxas test-tools`.  Covers: R1.
+
+| Req | Eval id(s) | Type |
+|-----|-----------|------|
+| R1  | TT-01, TE-04, PG-02 | Tool Test, Turn Eval, Platform Golden |
+| R2  | TE-07, SIM-03 | Turn Eval (0 PII leaks), Local Simulation |
+
+Coverage: 2/2 requirements = 100%.
+</example>
+
 DECIDED / ASSUMED / NEED NEXT.

@@ -26,4 +26,25 @@ handoff → save/version. Note where a human must supply secrets/auth.
 Emit `BUILD_PACKAGE` (Console Runbook + tree + scripts + CLI) in an artifact block. Then
 PAUSE for user confirmation before Evals.
 
+## Example (dual-emit shape — keep both paths in sync)
+<example>
+Console: 1) App → New agent "order_status_agent"  2) Add tool `get_order_status`
+(HTTP GET /orders/{id})  3) Attach PII guardrail  4) Set fallback → handoff.  [R1, R2]
+
+```
+app/order-support.yaml
+agents/order_status_agent.yaml
+tools/get_order_status.yaml
+guardrails/pii_redaction.yaml
+```
+```python
+from cxas_scrapi import Agents, Tools  # ADC auth
+t = Tools(project_id=PROJECT_ID, location="global")
+t.create_or_update("get_order_status", spec_path="tools/get_order_status.yaml")  # R1
+```
+```bash
+cxas push && cxas lint
+```
+</example>
+
 DECIDED / ASSUMED / NEED NEXT.
