@@ -30,6 +30,7 @@ sync.
 | `shared/ground-truth.md`   | Platform + cxas-scrapi facts. Prepended to every stage. |
 | `shared/output-contract.md`| Global output rules (artifact envelope, IDs, assumptions, dual-emit, delimited input, self-check). |
 | `examples/order-support/`  | A full worked run (sample PRD → all six stage artifacts). Start here to see output. |
+| `examples/cymbal-retail/`  | Pipeline run against CX Agent Studio's **default sample** (Cymbal Home & Garden) — verifiable vs. the console. |
 
 ## How to run
 
