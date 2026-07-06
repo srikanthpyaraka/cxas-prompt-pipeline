@@ -3,13 +3,20 @@
 Three levels of effort. Pick one.
 
 ## Level 0 — Just watch it work (0 setup, 1 minute)
+**Easiest (installable skill — auto-triggers):**
+```bash
+npx skills add srikanthpyaraka/cxas-prompt-pipeline
+```
+Then say "build a CX Agent Studio agent" or just type **`demo`**.
+
+**No-install alternative:**
 1. Open a Claude or Gemini chat.
 2. Paste the contents of **[`dist/cx-agent-builder.system.md`](dist/cx-agent-builder.system.md)**
    (one file — the whole engine).
 3. Send: **`demo`**.
 
-It runs the full pipeline on a built-in sample PRD, auto-answers the interview, and narrates
-every stage. You see a complete PRD→build→evals→debug run without providing anything.
+Either way it runs the full pipeline on a built-in sample PRD, auto-answers the interview,
+and narrates every stage — a complete PRD→build→evals→debug run without providing anything.
 
 ## Level 1 — Build from your own PRD (2 minutes to first output)
 1. Paste **`dist/cx-agent-builder.system.md`** as your first message (or, in Claude Code,

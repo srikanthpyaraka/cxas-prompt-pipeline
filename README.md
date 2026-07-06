@@ -5,8 +5,10 @@
 > `cxas-scrapi` config · **100% eval coverage** · a debug loop that turns every bug into a
 > regression test. Model-agnostic (Claude or Gemini).
 >
-> **Fastest start:** paste [`dist/cx-agent-builder.system.md`](dist/cx-agent-builder.system.md)
-> into Claude/Gemini, then type **`demo`**. See [`QUICKSTART.md`](QUICKSTART.md).
+> **Fastest start (installable Skill):** `npx skills add srikanthpyaraka/cxas-prompt-pipeline`
+> — then just ask "build a CXAS agent from this PRD" (it auto-triggers), or type **`demo`**.
+> No-install alternative: paste [`dist/cx-agent-builder.system.md`](dist/cx-agent-builder.system.md)
+> into Claude/Gemini, then **`demo`**. See [`QUICKSTART.md`](QUICKSTART.md).
 >
 > **Presenting this?** → [`docs/DEMO-RUNSHEET.md`](docs/DEMO-RUNSHEET.md) (runsheet) ·
 > [`docs/DEMO-TALK-TRACK.md`](docs/DEMO-TALK-TRACK.md) (script) ·
@@ -47,6 +49,8 @@ sync.
 | `06-validate.prompt.md` | **◆GATE◆** `cxas lint` self-audit + full deliverable package + final sign-off. |
 | `07-debug-fix.prompt.md` | On-demand loop: bug/failing-eval → reproduce → root cause → minimal fix → regression eval. |
 | `PROMPT-ASSESSOR.prompt.md` | Standalone skill: scores ANY prompt vs. Anthropic best practices, gives feedback, rewrites, re-scores until good-to-go. |
+| `.agents/skills/cx-agent-builder/` | Installable Agent Skill (auto-triggers). `SKILL.md` + bundled `stages/` + `reference/`, synced by `scripts/build-skill.sh`. |
+| `dist/cx-agent-builder.system.md` | One-file paste bundle (no-install path), built by `scripts/build-bundle.sh`. |
 | `docs/USING-CXAS-SKILLS.md` | How to install/use the 5 official cxas-scrapi skills and how this package maps to them. |
 | `docs/REVIEW.md` | Independent reviewer's assessment of the package (strengths, risks, verdict). |
 | `docs/DEMO-TALK-TRACK.md` | Demo script + talk track for presenting to GECX developers. |
@@ -64,6 +68,21 @@ sync.
 This package is a set of **prompts**, not a script. "Running it" means loading the right
 prompt files as context for an LLM (Claude, Gemini, etc.) and giving it your PRD. It is
 model-agnostic.
+
+### Option 0 — Install as an Agent Skill (auto-triggers)
+
+The whole pipeline is packaged as an installable skill in `.agents/skills/cx-agent-builder/`
+(works in Claude Code, Gemini CLI, Antigravity — same channel as the official cxas skills):
+
+```bash
+npx skills add srikanthpyaraka/cxas-prompt-pipeline
+```
+
+Or copy `.agents/skills/cx-agent-builder/` into your `~/.claude/skills/` (or project
+`.claude/skills/`). Once installed it **triggers by description** — say "build a CX Agent
+Studio agent from this PRD", or type `demo` / `template`. It reads its bundled stage
+contracts on demand and delegates on-platform work to `cxas-agent-foundry` etc. Regenerate
+the bundled files after editing prompts with `bash scripts/build-skill.sh`.
 
 ### Option A — Automated (recommended): one session drives all 6 stages
 
