@@ -33,15 +33,51 @@ Full script: `docs/DEMO-TALK-TRACK.md`. Target: **8–10 min + 5 min Q&A**.
 2. **Dual-emit** (`04`) — "UI teams and CI/CD teams, one source of truth."
 3. **Debug→regression** (`07`) — "every bug becomes a permanent test."
 
-## Optional live run (only if confident)
-Paste into a fresh Claude/Gemini session:
-> Follow shared/ground-truth.md + shared/output-contract.md + 00-orchestrator.prompt.md.
-> Begin STAGE 1 with this PRD: "Airline chat agent for flight status and same-day
-> rebooking; escalate anything else to a human; we have a flights API and a rebooking API."
+## Optional live run — full script (only if confident, ~2 min)
+Goal: show it **interview before it builds**. Run stages 1→2 only, then stop. If the live
+output drifts from what's below, don't fight it — narrate from this "expected output" and
+move on. If it stalls, jump to the Cymbal tabs (see fallbacks).
 
-Expect: a normalized brief + a batch of interview questions. **Stop after the interview
-questions appear** — that's the wow moment (it asks before building). Don't run the whole
-pipeline live; time-box it.
+### Step 1 — paste this verbatim (the setup + PRD)
+```
+Follow shared/ground-truth.md + shared/output-contract.md + 00-orchestrator.prompt.md as
+your instructions. Act as the orchestrator. Run STAGE 1 (Ingest) then STAGE 2 (Interview)
+only, then stop and wait. Do not design or build.
+
+<user_prd>
+Airline chat agent, "SkyHelp". Handle flight status and same-day rebooking. Escalate
+anything else (baggage claims, refunds, complaints) to a human. We have a Flights API
+(status) and a Rebooking API (write). Web + mobile chat, English. Should be fast and must
+not mishandle passenger data.
+</user_prd>
+```
+
+### Step 2 — what to SAY while it runs
+> "Notice it isn't building anything yet. It's normalizing the PRD into numbered
+> requirements, flagging what's missing — then it stops and interviews me."
+
+### Expected output (your safety net — narrate this if live drifts)
+**Stage 1 — Ingest** produces ~8 requirements, e.g.:
+- R1 flight status via Flights API (P0) · R2 same-day rebooking via Rebooking API, write (P0)
+- R3 escalate out-of-scope to human (P0) · R4 redact passenger PII (P0, guardrail)
+- R5 ground answers in the APIs, no free-generated status (P0) · R6 low latency (P1)
+- R7 en-US, web+mobile chat (P1) · **UNKNOWNs flagged:** KPIs, rebooking eligibility rules,
+  escalation target/hours, latency number.
+
+**Stage 2 — Interview** asks a batched, prioritized set with defaults, e.g.:
+| P | Question | Default |
+|---|----------|---------|
+| P0 | Can the agent WRITE rebookings, or only propose them for a human/gate to confirm? | Propose + confirm turn; no silent rebooking |
+| P0 | What's the containment / CSAT target? (sets eval bars) | Containment ≥ 0.40; CSAT ≥ 4.2 |
+| P0 | Which passenger fields must be redacted? | Name, PNR, contact; keep flight number |
+| P0 | Escalation target + hours; after-hours behavior? | Tier-1 queue; after-hours → ticket |
+| P1 | Latency budget (p95)? | ≤ 3s |
+
+### Step 3 — the line to land, then STOP
+> "That's the whole point: it **refuses to design until these are answered**. In a real
+> session I'd answer, it logs any defaults as assumptions I can veto, then it moves to
+> design. I'll stop the live run here and switch to a finished example."
+Then close the session and go to the Cymbal tabs. **Do not run stages 3–7 live.**
 
 ## If something breaks (fallbacks)
 - **Live run stalls / no internet** → switch to the committed `examples/cymbal-retail/` tabs. Same story, zero risk.
