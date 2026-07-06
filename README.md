@@ -5,10 +5,13 @@
 > `cxas-scrapi` config · **100% eval coverage** · a debug loop that turns every bug into a
 > regression test. Model-agnostic (Claude or Gemini).
 >
+> **Fastest start:** paste [`dist/cx-agent-builder.system.md`](dist/cx-agent-builder.system.md)
+> into Claude/Gemini, then type **`demo`**. See [`QUICKSTART.md`](QUICKSTART.md).
+>
 > **Presenting this?** → [`docs/DEMO-RUNSHEET.md`](docs/DEMO-RUNSHEET.md) (runsheet) ·
 > [`docs/DEMO-TALK-TRACK.md`](docs/DEMO-TALK-TRACK.md) (script) ·
+> [`docs/demo-reel.html`](docs/demo-reel.html) (record-ready reel) ·
 > [`examples/cymbal-retail/`](examples/cymbal-retail/) (walkthrough vs. the console).
-> **New here?** → jump to [How to run](#how-to-run).
 
 A modular, chainable prompt system that turns **any input describing a desired
 customer-experience agent** (a formal PRD, meeting notes, tickets, or bullet points)
@@ -21,7 +24,8 @@ Enterprise CX) agent** using the **cxas-scrapi** framework.
 > layer**; it **delegates on-platform build/eval/debug to those skills**. Install:
 > `npx skills add googlecloudplatform/cxas-scrapi`. Mapping: [`docs/USING-CXAS-SKILLS.md`](docs/USING-CXAS-SKILLS.md).
 
-It is deliberately split into an **orchestrator + six stage prompts** so each step is
+It is deliberately split into an **orchestrator + seven stage prompts** (six linear stages
+plus a non-linear debug/fix loop) so each step is
 independently runnable, cheaper per call, and version-controllable. The orchestrator
 holds state and enforces two hard gates: **Interview** (never build on unstated
 assumptions) and **Validate** (never ship without a lint self-audit and user sign-off).

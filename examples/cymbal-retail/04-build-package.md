@@ -13,7 +13,10 @@ STAGE 4 — BUILD (dual-emit: console runbook AND config-as-code)
 6. Callbacks: register before_model, after_model, after_tool.
 7. Save + version. [human: supply OpenAPI base URLs + auth here]
 
-=== PART B — CONFIG-AS-CODE (cxas-scrapi) ===
+=== PART B — CONFIG-AS-CODE ===
+(In current guidance the code path delegates to the official cxas-agent-foundry skill —
+`inspect-app.py`, `cxas push`, lint via its `lint-fixer` sub-agent. Raw scrapi shown below
+for illustration of the underlying resources.)
 Tree:
   app/cymbal_retail.yaml
   agents/{cymbal_retail_agent,upsell_agent,out_of_scope_agent}.yaml

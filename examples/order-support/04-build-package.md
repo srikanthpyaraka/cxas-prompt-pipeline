@@ -15,7 +15,10 @@ STAGE 4 — BUILD (dual-emit: console runbook AND config-as-code)
 5. Configure generative fallback + handoff: tier-1 queue (6am–10pm), after-hours ticket.
 6. Save & create a version. [human: supply OAuth SA + API base URLs here]
 
-=== PART B — CONFIG-AS-CODE (cxas-scrapi) ===
+=== PART B — CONFIG-AS-CODE ===
+(In current guidance the code path delegates to the official cxas-agent-foundry skill —
+`inspect-app.py`, `cxas push`, lint via its `lint-fixer` sub-agent. Raw scrapi shown below
+for illustration of the underlying resources.)
 Tree (cxas pull/push):
   app/orderbot.yaml
   agents/router.yaml
