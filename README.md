@@ -10,7 +10,8 @@
 > No-install alternative: paste [`dist/cx-agent-builder.system.md`](dist/cx-agent-builder.system.md)
 > into Claude/Gemini, then **`demo`**. See [`QUICKSTART.md`](QUICKSTART.md).
 >
-> **Presenting this?** → [`docs/DEMO-RUNSHEET.md`](docs/DEMO-RUNSHEET.md) (runsheet) ·
+> **Presenting this?** → [`docs/DEMO-PLAYBOOK.md`](docs/DEMO-PLAYBOOK.md) (install→overview→run) ·
+> [`docs/DEMO-RUNSHEET.md`](docs/DEMO-RUNSHEET.md) (runsheet) ·
 > [`docs/DEMO-TALK-TRACK.md`](docs/DEMO-TALK-TRACK.md) (script) ·
 > [`docs/demo-reel.html`](docs/demo-reel.html) (record-ready reel) ·
 > [`examples/cymbal-retail/`](examples/cymbal-retail/) (walkthrough vs. the console).
