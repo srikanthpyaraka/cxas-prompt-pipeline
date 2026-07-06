@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CX Agent Builder — Demo Reel</title>
+<style>
+  :root{
+    --navy:#1E2761; --deep:#141A47; --ice:#CADCFC; --teal:#02C39A; --teal2:#00A896;
+    --muted:#5B6785; --tint:#F2F6FF; --ink:#22284B; --tint2:#EAF7F3; --sand:#FBEEE6;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%; background:#0b0d1c; overflow:hidden; font-family:"Segoe UI",Calibri,Arial,sans-serif}
+  #stageWrap{position:fixed; inset:0; overflow:hidden}
+  #stage{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:1280px; height:720px; background:#fff; border-radius:10px;
+    overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.55)}
+  .scene{position:absolute; inset:0; padding:64px 72px; opacity:0; visibility:hidden}
+  .scene.active{opacity:1; visibility:visible}
+  .scene.dark{background:var(--navy); color:#fff}
+  .blob{position:absolute; border-radius:50%; background:var(--deep)}
+  .kicker{font-size:18px; font-weight:700; letter-spacing:3px; color:var(--teal2); text-transform:uppercase}
+  .dark .kicker{color:var(--teal)}
+  h1{font-family:Cambria,Georgia,serif; color:var(--navy); font-size:44px; line-height:1.1; margin-top:10px}
+  .dark h1{color:#fff}
+  .hero-title{font-size:84px; letter-spacing:-1px}
+  .sub{font-size:30px; color:var(--ice); margin-top:18px; font-weight:400}
+  .lead{font-size:22px; color:var(--muted); margin-top:16px; font-style:italic}
+  .chips{display:flex; gap:12px; flex-wrap:wrap; margin-top:26px}
+  .chip{background:var(--deep); color:var(--ice); padding:12px 18px; border-radius:10px; font-size:16px; font-weight:600}
+  .chip.light{background:var(--tint); color:var(--navy)}
+  .row{display:flex; gap:20px; margin-top:34px}
+  .card{background:var(--tint); border-radius:14px; padding:26px 24px; flex:1; box-shadow:0 10px 26px rgba(20,26,71,.10)}
+  .card.mint{background:var(--tint2)}
+  .card h3{font-family:Cambria,serif; color:var(--navy); font-size:22px; margin-bottom:8px}
+  .card p{color:var(--ink); font-size:16px; line-height:1.45}
+  .num{width:44px; height:44px; border-radius:50%; background:var(--navy); color:#fff; font-weight:800;
+    display:grid; place-items:center; font-family:Cambria,serif; font-size:18px}
+  .num.teal{background:var(--teal2)}
+  .pipe{display:flex; gap:8px; margin-top:40px; align-items:flex-start}
+  .stg{flex:1; text-align:center}
+  .stg .box{border-radius:12px; padding:16px 6px; font-weight:700; font-family:Cambria,serif; font-size:18px;
+    background:var(--tint); color:var(--navy); box-shadow:0 8px 20px rgba(20,26,71,.10)}
+  .stg.gate .box{background:var(--navy); color:#fff}
+  .stg.ship .box{background:var(--teal); color:#fff}
+  .stg .lab{font-size:12px; font-weight:700; color:var(--teal2); margin-top:8px; letter-spacing:1px}
+  .bar{margin-top:26px; background:var(--tint); border-radius:14px; padding:20px 24px; display:flex; gap:18px; align-items:center}
+  .bar p{color:var(--ink); font-size:17px}
+  .layer{border-radius:14px; padding:22px 26px}
+  .layer.top{background:var(--navy); color:#fff}
+  .layer.bot{background:var(--tint2)}
+  .layer h3{font-family:Cambria,serif; font-size:22px; margin-bottom:14px}
+  .layer.bot h3{color:var(--navy)}
+  .mini{display:flex; gap:10px; flex-wrap:wrap}
+  .mini .m{background:var(--deep); color:var(--ice); border-radius:9px; padding:9px 12px; font-size:14px; font-weight:600}
+  .layer.bot .m{background:#fff; color:var(--navy); box-shadow:0 6px 16px rgba(20,26,71,.10)}
+  .connect{text-align:center; color:var(--teal2); font-weight:800; font-style:italic; font-size:17px; margin:16px 0}
+  .split{display:flex; gap:22px; margin-top:30px}
+  .pane{flex:1; border-radius:14px; padding:26px}
+  .pane.a{background:var(--tint)} .pane.b{background:var(--navy); color:#fff}
+  .pane h3{font-family:Cambria,serif; font-size:23px; color:var(--navy)} .pane.b h3{color:#fff}
+  .pane .tag{font-size:14px; font-style:italic; color:var(--muted); margin:4px 0 14px} .pane.b .tag{color:var(--ice)}
+  .pane li{font-size:16px; margin:9px 0; list-style:none; color:var(--ink)} .pane.b li{color:var(--ice)}
+  .pane li::before{content:"▸ "; color:var(--teal2); font-weight:800}
+  .evalwrap{display:flex; gap:26px; margin-top:26px}
+  .evallist{flex:1.3}
+  .erow{background:var(--tint); border-radius:10px; padding:12px 18px; margin-bottom:10px; display:flex; gap:16px}
+  .erow:nth-child(even){background:var(--tint2)}
+  .erow b{font-family:Cambria,serif; color:var(--navy); font-size:16px; min-width:190px}
+  .erow span{color:var(--ink); font-size:15px}
+  .stat{flex:1; background:var(--navy); border-radius:16px; color:#fff; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding:20px}
+  .stat .big{font-family:Cambria,serif; font-size:104px; color:var(--teal); line-height:1}
+  .stat .cap{color:var(--ice); font-size:17px; margin-top:6px; text-align:center}
+  .steps{margin-top:26px}
+  .step{display:flex; gap:16px; align-items:center; margin-bottom:14px}
+  .step .body{background:var(--tint); border-radius:10px; padding:12px 18px; flex:1}
+  .step:nth-child(even) .body{background:var(--tint2)}
+  .step .body b{font-family:Cambria,serif; color:var(--navy); font-size:16px} .step .body span{color:var(--ink); font-size:15px}
+  .cta-link{color:var(--teal); font-size:24px; font-weight:800; margin-top:26px; font-family:Cambria,serif}
+  .cta-lines{font-size:22px; color:var(--ice); margin-top:20px; line-height:1.6}
+  /* animation */
+  .scene.active .anim{animation:rise .6s cubic-bezier(.2,.75,.25,1) both}
+  @keyframes rise{from{opacity:0; transform:translateY(22px)} to{opacity:1; transform:none}}
+  /* chrome */
+  #hud{position:fixed; left:0; right:0; bottom:0; height:6px; background:rgba(255,255,255,.12)}
+  #prog{height:100%; width:0; background:linear-gradient(90deg,var(--teal),var(--teal2))}
+  #meta{position:fixed; top:14px; right:20px; color:#8ea0c7; font-size:13px; font-family:Calibri,Arial}
+  #cap{position:fixed; left:0; right:0; bottom:24px; text-align:center; color:#dbe4f7; font-size:19px;
+    padding:0 12%; text-shadow:0 2px 8px rgba(0,0,0,.6)}
+  #hint{position:fixed; bottom:14px; left:20px; color:#5f6c8f; font-size:12px; font-family:Calibri,Arial}
+  .hidden{display:none !important}
+</style>
+</head>
+<body>
+<div id="stageWrap"><div id="stage"></div></div>
+<div id="hud"><div id="prog"></div></div>
+<div id="meta"></div>
+<div id="cap"></div>
+<div id="hint">Space play/pause · ← → step · C captions · F fullscreen · R restart</div>
+
+<script>
+const S = [
+ {dur:12, cap:"CX Agent Builder — a PRD goes in, a designed, built, and evaluated CX Agent Studio agent comes out.",
+  html:`<div class="blob" style="width:520px;height:520px;right:-160px;top:-180px"></div>
+   <div class="blob" style="width:380px;height:380px;left:-140px;bottom:-160px"></div>
+   <div class="kicker anim">CX Agent Studio · cxas-scrapi</div>
+   <h1 class="hero-title anim" style="margin-top:22px">CX Agent Builder</h1>
+   <div class="sub anim">PRD in → a designed, built &amp; evaluated CX Agent Studio agent out.</div>
+   <div class="chips anim" style="margin-top:40px">
+     <span class="chip">Interview gate</span><span class="chip">Console + code</span>
+     <span class="chip">100% eval coverage</span><span class="chip">Bug → regression test</span></div>`, dark:true},
+
+ {dur:14, cap:"Today, turning a PRD into a production agent is manual, inconsistent, and under-tested.",
+  html:`<div class="kicker anim">The problem</div><h1 class="anim">PRD → agent is manual and lossy</h1>
+   <div class="row anim">
+    <div class="card"><h3>Lossy translation</h3><p>A developer hand-converts the PRD into agents, tools, guardrails. Details drop.</p></div>
+    <div class="card"><h3>Under-tested</h3><p>Ships with a few happy-path checks. Edge cases, safety, grounding unverified.</p></div>
+    <div class="card"><h3>Undocumented</h3><p>No line from requirement to design to test. When it breaks, nobody knows why.</p></div></div>`},
+
+ {dur:18, cap:"The answer is a prompt pipeline: seven stages, two hard gates, and a debug loop — model-agnostic.",
+  html:`<div class="kicker anim">The idea</div><h1 class="anim">A pipeline — 7 stages, 2 hard gates</h1>
+   <div class="pipe anim">
+    ${["Ingest","Interview","Design","Build","Evals","Validate","Ship"].map((s,i)=>{
+      const gate=i===1||i===5, ship=i===6;
+      return `<div class="stg ${gate?'gate':''} ${ship?'ship':''}"><div class="box">${s}</div>${gate?'<div class="lab">◆ GATE</div>':''}</div>`}).join('')}
+   </div>
+   <div class="bar anim"><div class="num teal">7</div><p><b>Debug &amp; Fix</b> — a non-linear loop: any bug or failing eval → root cause → minimal fix → regression eval (RED→GREEN). Never reduces coverage.</p></div>`},
+
+ {dur:16, cap:"It builds on top of Google's official cxas-scrapi skills — this package adds the intake, gates, and quality bars.",
+  html:`<div class="kicker anim">How it fits</div><h1 class="anim">Built on the official cxas-scrapi skills</h1>
+   <div class="layer top anim"><h3>This package — decides WHAT to build, holds the quality bars</h3>
+     <div class="mini">${["Intake / normalize","Interview gate","Traceability","Dual-emit","Prompt assessor"].map(x=>`<span class="m">${x}</span>`).join('')}</div></div>
+   <div class="connect anim">delegates on-platform execution to ↓</div>
+   <div class="layer bot anim"><h3>Official cxas-scrapi Agent Skills — DO the building, evaluating, debugging</h3>
+     <div class="mini">${["cxas-agent-foundry","cxas-sim-eval","cxas-dfcx-migration","cxas-cuj-report-generator","cxas-loss-analysis"].map(x=>`<span class="m">${x}</span>`).join('')}</div></div>`},
+
+ {dur:12, cap:"Stage one normalizes any PRD into numbered requirements — and flags what's missing instead of inventing it.",
+  html:`<div class="kicker anim">Stage 1 · Ingest</div><h1 class="anim">Any PRD → numbered requirements</h1>
+   <div class="row anim">
+    <div class="card"><h3>Normalize</h3><p>Every requirement gets an ID, type, and priority (P0/P1).</p></div>
+    <div class="card mint"><h3>Flag, don't invent</h3><p>Missing details are marked ❓UNKNOWN — never guessed.</p></div>
+    <div class="card"><h3>Trace</h3><p>IDs stay stable across every downstream stage.</p></div></div>`},
+
+ {dur:18, cap:"Then the differentiator: it interviews you. It will not design until the blocking questions are answered.",
+  html:`<div class="kicker anim">Stage 2 · Interview &nbsp;◆ HARD GATE</div><h1 class="anim">It asks before it builds</h1>
+   <div class="steps anim">
+    <div class="step"><div class="num">?</div><div class="body"><b>Batched &amp; prioritized</b> &nbsp;<span>— P0 blockers first, ~7 per round, each with a sensible default.</span></div></div>
+    <div class="step"><div class="num">✓</div><div class="body"><b>Won't proceed</b> &nbsp;<span>— no design until P0s are resolved (or you say "assume defaults").</span></div></div>
+    <div class="step"><div class="num teal">≡</div><div class="body"><b>Logs assumptions</b> &nbsp;<span>— every default recorded so you can veto it.</span></div></div></div>
+   <div class="lead anim">Most agent projects fail here. We made it a gate.</div>`},
+
+ {dur:12, cap:"Stage three designs the architecture and ties every requirement to a design element and a test.",
+  html:`<div class="kicker anim">Stage 3 · Design</div><h1 class="anim">Architecture + full traceability</h1>
+   <div class="row anim">
+    <div class="card"><h3>Decompose</h3><p>App → agents → tools → guardrails, smallest set that satisfies the spec.</p></div>
+    <div class="card mint"><h3>Traceability matrix</h3><p>Requirement → design element → planned eval. Coverage is a number.</p></div></div>`},
+
+ {dur:16, cap:"Stage four is the money slide — the same resources emitted twice: a console runbook AND cxas-scrapi code.",
+  html:`<div class="kicker anim">Stage 4 · Build</div><h1 class="anim">One source of truth, two paths</h1>
+   <div class="split anim">
+    <div class="pane a"><h3>Console runbook</h3><div class="tag">for teams building in the UI</div>
+      <ul><li>Numbered CX Agent Studio steps</li><li>App → agents → tools → guardrails</li><li>Fallbacks + human handoff</li></ul></div>
+    <div class="pane b"><h3>cxas-scrapi config-as-code</h3><div class="tag">for CI/CD & version control</div>
+      <ul><li>pull / push directory tree</li><li>foundry: push + lint-fixer</li><li>Every resource cites its requirement</li></ul></div></div>`},
+
+ {dur:14, cap:"Stage five generates all five evaluation types with KPI-tied thresholds — and one hundred percent coverage.",
+  html:`<div class="kicker anim">Stage 5 · Evals</div><h1 class="anim">All 5 eval types — full coverage</h1>
+   <div class="evalwrap anim">
+    <div class="evallist">
+     ${[["Platform Goldens","golden conversations"],["Local Simulations","personas incl. adversarial"],["Tool Tests","I/O incl. failure paths"],["Callback Tests","before/after model + tool"],["Turn Evals","right tool · grounded · no PII"]].map(e=>`<div class="erow"><b>${e[0]}</b><span>${e[1]}</span></div>`).join('')}
+    </div>
+    <div class="stat"><div class="big">100%</div><div class="cap">requirement → eval coverage</div></div></div>`},
+
+ {dur:18, cap:"And when an eval fails, stage seven turns the bug into a documented root cause, a minimal fix, and a permanent regression test.",
+  html:`<div class="kicker anim">Stage 7 · Debug &amp; Fix</div><h1 class="anim">Every bug becomes a permanent test</h1>
+   <div class="steps anim">
+    <div class="step"><div class="num">1</div><div class="body"><b>Reproduce</b> <span>— Turn Eval TE-02 failed: agent upsold during checkout.</span></div></div>
+    <div class="step"><div class="num">2</div><div class="body"><b>Root cause</b> <span>— callback suppressed on complaints only, never on cart state.</span></div></div>
+    <div class="step"><div class="num">3</div><div class="body"><b>Minimal fix</b> <span>— add cart_state ∈ {checkout, payment} to the suppression guard.</span></div></div>
+    <div class="step"><div class="num teal">4</div><div class="body"><b>Regression eval</b> <span>— new TE-02b: RED before → GREEN after. Coverage up, not down.</span></div></div></div>`},
+
+ {dur:12, cap:"It holds up because it's engineering discipline — traceable, grounded, self-auditing, and a full lifecycle.",
+  html:`<div class="kicker anim">Why it holds up</div><h1 class="anim">Discipline, not a clever one-shot</h1>
+   <div class="row anim">
+    <div class="card"><h3>Traceable</h3><p>Requirement → design → eval, with coverage as a number.</p></div>
+    <div class="card mint"><h3>Grounded</h3><p>Facts route through tools; guardrails on every agent.</p></div>
+    <div class="card"><h3>Self-auditing</h3><p>An assessor scores the prompts — it caught a bug in its own rubric.</p></div></div>`},
+
+ {dur:13, cap:"Clone it, point stage one at your PRD, and answer the interview. Feedback and pull requests welcome.",
+  html:`<div class="blob" style="width:440px;height:440px;left:-150px;top:-150px"></div>
+   <div class="blob" style="width:440px;height:440px;right:-150px;bottom:-150px"></div>
+   <h1 class="anim" style="font-size:56px;color:#fff">Try it on a real PRD</h1>
+   <div class="cta-lines anim">Clone it → point stage 1 at your PRD → answer the interview.<br>
+    You get a console runbook, cxas-scrapi config, and a runnable eval suite.</div>
+   <div class="cta-link anim">github.com/srikanthpyaraka/cxas-prompt-pipeline</div>`, dark:true},
+];
+
+const stage=document.getElementById('stage'), prog=document.getElementById('prog'),
+      meta=document.getElementById('meta'), cap=document.getElementById('cap');
+let idx=0, playing=true, elapsed=0, last=performance.now(), capsOn=true;
+
+function fit(){ const sc=Math.min(window.innerWidth/1280, window.innerHeight/720);
+  stage.style.transform=`translate(-50%,-50%) scale(${sc})`; }
+window.addEventListener('resize',fit); fit();
+
+function render(i){
+  const s=S[i];
+  stage.innerHTML=`<section class="scene active ${s.dark?'dark':''}">${s.html}</section>`;
+  // stagger animation delays on direct children marked .anim
+  const anims=stage.querySelectorAll('.scene > .anim');
+  anims.forEach((el,k)=>{ el.style.animationDelay=(0.12*k)+'s'; });
+  cap.textContent=capsOn? s.cap : '';
+  meta.textContent=`CX Agent Builder   ·   ${i+1} / ${S.length}`;
+  elapsed=0;
+}
+function goto(i){ idx=(i+S.length)%S.length; render(idx); }
+function next(){ goto(idx+1); }
+function prev(){ goto(idx-1); }
+
+function tick(now){
+  const d=now-last; last=now;
+  if(playing){
+    elapsed+=d;
+    const dur=S[idx].dur*1000;
+    prog.style.width=Math.min(100, elapsed/dur*100)+'%';
+    if(elapsed>=dur) next();
+  }
+  requestAnimationFrame(tick);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'){ playing=!playing; e.preventDefault(); }
+  else if(e.code==='ArrowRight'){ playing=false; next(); }
+  else if(e.code==='ArrowLeft'){ playing=false; prev(); }
+  else if(e.key.toLowerCase()==='r'){ goto(0); playing=true; }
+  else if(e.key.toLowerCase()==='c'){ capsOn=!capsOn; cap.textContent=capsOn?S[idx].cap:''; }
+  else if(e.key.toLowerCase()==='f'){ if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+});
+
+render(0);
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>

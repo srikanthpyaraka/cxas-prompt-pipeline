@@ -47,6 +47,8 @@ sync.
 | `docs/REVIEW.md` | Independent reviewer's assessment of the package (strengths, risks, verdict). |
 | `docs/DEMO-TALK-TRACK.md` | Demo script + talk track for presenting to GECX developers. |
 | `docs/DEMO-RUNSHEET.md` | Minute-by-minute presenter runsheet with backup answers and fallbacks. |
+| `docs/demo-reel.html` | Self-running animated demo reel (~2:55) — full-screen and screen-record it. |
+| `docs/VIDEO-SCRIPT.md` | Timed voiceover script + recording guide that pairs with the reel. |
 | `ASSESSMENT.md` | Report from running the assessor on this package (before/after scores + fixes). |
 | `shared/ground-truth.md`   | Platform + cxas-scrapi facts. Prepended to every stage. |
 | `shared/output-contract.md`| Global output rules (artifact envelope, IDs, assumptions, dual-emit, delimited input, self-check). |
