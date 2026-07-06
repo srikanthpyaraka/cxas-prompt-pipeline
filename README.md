@@ -1,9 +1,25 @@
 # CX Agent Builder — Prompt Package
 
+> **PRD in → a designed, built, and evaluated CX Agent Studio agent out.**
+> An interview gate so it never builds on guesses · output as **both** console steps and
+> `cxas-scrapi` config · **100% eval coverage** · a debug loop that turns every bug into a
+> regression test. Model-agnostic (Claude or Gemini).
+>
+> **Presenting this?** → [`docs/DEMO-RUNSHEET.md`](docs/DEMO-RUNSHEET.md) (runsheet) ·
+> [`docs/DEMO-TALK-TRACK.md`](docs/DEMO-TALK-TRACK.md) (script) ·
+> [`examples/cymbal-retail/`](examples/cymbal-retail/) (walkthrough vs. the console).
+> **New here?** → jump to [How to run](#how-to-run).
+
 A modular, chainable prompt system that turns **any input describing a desired
 customer-experience agent** (a formal PRD, meeting notes, tickets, or bullet points)
 into a **designed, built, and evaluated Google Cloud CX Agent Studio (Gemini
 Enterprise CX) agent** using the **cxas-scrapi** framework.
+
+> **Works with the official cxas-scrapi Agent Skills.** cxas-scrapi ships 5 skills
+> (`cxas-agent-foundry`, `cxas-sim-eval`, `cxas-dfcx-migration`, `cxas-cuj-report-generator`,
+> `cxas-loss-analysis`). This package is the **intake + interview + traceability + dual-emit
+> layer**; it **delegates on-platform build/eval/debug to those skills**. Install:
+> `npx skills add googlecloudplatform/cxas-scrapi`. Mapping: [`docs/USING-CXAS-SKILLS.md`](docs/USING-CXAS-SKILLS.md).
 
 It is deliberately split into an **orchestrator + six stage prompts** so each step is
 independently runnable, cheaper per call, and version-controllable. The orchestrator
@@ -27,8 +43,10 @@ sync.
 | `06-validate.prompt.md` | **◆GATE◆** `cxas lint` self-audit + full deliverable package + final sign-off. |
 | `07-debug-fix.prompt.md` | On-demand loop: bug/failing-eval → reproduce → root cause → minimal fix → regression eval. |
 | `PROMPT-ASSESSOR.prompt.md` | Standalone skill: scores ANY prompt vs. Anthropic best practices, gives feedback, rewrites, re-scores until good-to-go. |
+| `docs/USING-CXAS-SKILLS.md` | How to install/use the 5 official cxas-scrapi skills and how this package maps to them. |
 | `docs/REVIEW.md` | Independent reviewer's assessment of the package (strengths, risks, verdict). |
 | `docs/DEMO-TALK-TRACK.md` | Demo script + talk track for presenting to GECX developers. |
+| `docs/DEMO-RUNSHEET.md` | Minute-by-minute presenter runsheet with backup answers and fallbacks. |
 | `ASSESSMENT.md` | Report from running the assessor on this package (before/after scores + fixes). |
 | `shared/ground-truth.md`   | Platform + cxas-scrapi facts. Prepended to every stage. |
 | `shared/output-contract.md`| Global output rules (artifact envelope, IDs, assumptions, dual-emit, delimited input, self-check). |

@@ -8,14 +8,18 @@ Numbered CX Agent Studio UI steps to create, in order: the App → each Agent (g
 instructions, tools attach, examples) → each Tool → each Guardrail → attach fallbacks &
 handoff → save/version. Note where a human must supply secrets/auth.
 
-## Part B — CONFIG-AS-CODE (cxas-scrapi)
+## Part B — CONFIG-AS-CODE (delegate to cxas-agent-foundry)
+Prefer the official **cxas-agent-foundry** skill over hand-written code. Emit:
 1. **Directory tree** for `cxas pull`/`push`:
-   `app/`, `agents/`, `tools/`, `guardrails/`, `examples/` — with each resource's config
-   file (YAML/JSON) fully populated from the design.
-2. **Python create/update scripts** using `Apps`, `Agents`, `Tools`, `Guardrails`,
-   `Deployments`, parameterized by `project_id` / `location`, with auth note (ADC).
-   Show idempotent create-or-update where possible.
-3. **CLI runbook:** ordered `cxas push` / lint / deploy commands.
+   `app/`, `agents/`, `tools/`, `guardrails/`, `examples/` — each resource's config
+   (YAML/JSON) fully populated from the design.
+2. **Foundry runbook** (this is the code path):
+   - `python .agents/skills/cxas-agent-foundry/scripts/inspect-app.py` to check current state.
+   - `cxas push --app-dir <project>/cxas_app/<AppName> --to projects/<pid>/locations/<loc>/apps/<app_id> --project-id <pid> --location <loc>`
+   - Lint via the skill's **`lint-fixer` sub-agent** (do not run `cxas lint` on the main
+     thread — its output is verbose); push only after lint returns clean.
+   Only drop to raw `Apps/Agents/Tools/Guardrails` Python where no skill path covers the step.
+3. Note the foundry skill enforces a `todo.md` checklist first — honor it.
 
 ## Cross-checks
 - Every resource cites the `Rn`(s) it satisfies.

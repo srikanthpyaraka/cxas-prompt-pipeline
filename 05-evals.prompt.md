@@ -14,11 +14,15 @@ to KPIs, and EVERY requirement covered by ≥1 eval.
 Set explicit pass/fail bars, e.g. tool-call accuracy ≥ 0.95, response-match ≥ target,
 latency ≤ budget, 0 PII leaks. State metric, target, and rationale for each.
 
-## Dual-emit run instructions
+## Dual-emit run instructions (delegate to skills)
 - **Console:** where/how to run goldens & simulations in the CX Agent Studio UI.
-- **Config-as-code:** evals-module calls (ToolEvals, SimulationEvals, CallbackEvals,
-  GuardrailEvals) + CLI (`cxas test-tools`, `cxas test-callbacks`, `cxas push-eval`),
-  parameterized by `project_id`/`location`.
+- **Config-as-code (prefer official skills):**
+  - Run + triage + report in one shot with **cxas-agent-foundry**:
+    `python .agents/skills/cxas-agent-foundry/scripts/run-and-report.py --message "<what changed>" --runs 5`.
+  - Generate `SimulationEvals` from turn-by-turn goldens with **cxas-sim-eval** (it will
+    ask for the full app resource name + output dir).
+  - Fall back to direct evals-module calls (ToolEvals, SimulationEvals, CallbackEvals,
+    GuardrailEvals) / `cxas test-tools` / `cxas test-callbacks` only where a skill doesn't cover it.
 
 ## Coverage
 Emit a coverage table `Rn → eval id(s) → type`. Report **coverage %**; if < 100%, list

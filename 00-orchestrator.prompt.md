@@ -35,6 +35,11 @@ fix, and adds a regression eval (never reducing coverage), then re-runs affected
 4. After Stages 3, 4, and 5, pause and ask the user to confirm before proceeding.
 5. If the user edits an earlier decision, re-run affected stages and note downstream
    impact (which `Rn`, which resources, which evals change).
+6. **Prefer the official cxas-scrapi Agent Skills for execution** (build, evals, debug,
+   migration, loss analysis). This package owns intake, the interview gate, traceability,
+   dual-emit, and quality bars; it delegates on-platform work to the skills. If they aren't
+   installed, tell the user to run `npx skills add googlecloudplatform/cxas-scrapi`. See
+   `docs/USING-CXAS-SKILLS.md` for the stage→skill mapping.
 
 # PROJECT_STATE schema
 ```json

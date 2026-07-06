@@ -24,6 +24,19 @@ the **cxas-scrapi** Python framework. Treat the following as authoritative.
   environment credentials on Cloud Run/Functions, or an explicit `creds_path`.
 - Common constructors take `project_id=...`, `location='global'` (or region).
 
+## Official Agent Skills — prefer these for execution
+cxas-scrapi ships 5 Agent Skills (install: `npx skills add googlecloudplatform/cxas-scrapi`;
+they live in `.agents/skills/` and work in Claude Code, Gemini CLI, Antigravity). **Where a
+skill exists, delegate execution to it instead of hand-writing cxas-scrapi code.**
+- **cxas-agent-foundry** — end-to-end build/eval/debug/iterate; scripts `run-and-report.py`,
+  `inspect-app.py`, `triage-results.py`; `lint-fixer` sub-agent; enforces a `todo.md`.
+- **cxas-sim-eval** — converts goldens → `SimulationEvals` test cases.
+- **cxas-dfcx-migration** — Dialogflow CX → CXAS (`cxas migrate dfcx …`).
+- **cxas-cuj-report-generator** — requirement docs (BRD/diagrams/code) → CUJ transcripts/reports.
+- **cxas-loss-analysis** — non-contained conversations → failure clusters → regression evals.
+See `docs/USING-CXAS-SKILLS.md` for the stage→skill mapping. This package's role is intake,
+the interview gate, traceability, dual-emit, and quality bars — not to reimplement the skills.
+
 ## Evaluation taxonomy — cover all five where applicable
 1. **Platform Goldens** — golden conversations stored on-platform with expected outcomes.
 2. **Local Simulations** — multi-turn persona conversations run locally.

@@ -3,6 +3,9 @@ Input: the user's raw material (PRD, notes, tickets, bullets — any format/qual
 Goal: normalize it into a structured brief and expose every gap. Do NOT design yet.
 
 ## Do
+0. If the input is a *directory of rich requirement docs* (BRDs, diagrams, code), prefer
+   the **cxas-cuj-report-generator** skill to extract Critical User Journeys / transcripts
+   first, then fold its output into the brief below.
 1. Extract and normalize into the NORMALIZED_BRIEF fields below. Mark anything absent as
    `❓UNKNOWN` — never invent it.
 2. Decompose into **atomic requirements**, each with an ID and a full requirement record
