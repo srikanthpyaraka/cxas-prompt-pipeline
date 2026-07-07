@@ -7,9 +7,16 @@ justify every split.
 1. **Architecture overview** — App count; agent count and WHY; single-agent vs.
    multi-agent orchestration (router → sub-agents) with rationale and a simple diagram
    (ASCII or mermaid).
-2. **Per agent** — goal; scope; playbook instructions; required tools; example dialogs
-   (happy path + disambiguation + edge); guardrails; generative-fallback behavior;
-   human-handoff conditions.
+2. **Per agent** — goal; scope; playbook instructions; required tools; guardrails;
+   generative-fallback behavior; human-handoff conditions. Plus these three mandates:
+   - **Grounding (mandatory):** for every factual intent, name the source of truth —
+     **Data Store (RAG)**, a tool, or static content — and how the answer is grounded. No
+     intent may answer factual questions from the model alone. Flag anything ungrounded.
+   - **Examples (mandatory coverage):** generate few-shot examples per agent covering
+     **happy path · disambiguation · multi-intent · tool-failure · escalation**. On this
+     platform examples steer routing and tool use more than instructions do — don't skimp.
+   - **Channel:** if voice is in scope, specify no-input/no-match timeouts, barge-in, DTMF,
+     and SSML. Otherwise state chat-only explicitly.
 3. **Per tool** — name; purpose; input/output schema; auth; target system; failure
    handling; idempotency.
 4. **Guardrails** — safety, PII redaction, off-topic/refusal, grounding constraints;

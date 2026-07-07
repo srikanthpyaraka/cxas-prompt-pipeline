@@ -3,6 +3,18 @@ Input: `ARCHITECTURE` + `TRACEABILITY_MATRIX`. Goal: make the design real in CX 
 Studio, emitted BOTH as a console runbook AND as cxas-scrapi config-as-code, describing
 the same resources and kept in sync (see output-contract dual-emit rule).
 
+## Write to files, not chat — and hand off cleanly to cxas-agent-foundry
+- Emit the config **as files written into the layout the toolchain expects**:
+  `<project>/cxas_app/<AppName>/` with `app/`, `agents/`, `tools/`, `guardrails/`,
+  `examples/` (and `datastores/` where grounding uses a Data Store). This is what
+  `cxas push` consumes and what `cxas pull` produces — do not leave config as pasted
+  markdown on a real project.
+- **This suite is the front half foundry doesn't have.** Produce a single `HANDOFF` note
+  that tells cxas-agent-foundry exactly what to build and verify: the app path above, the
+  agent/tool/guardrail inventory, the grounding sources, and the eval definitions from
+  Stage 5. Seed the foundry `todo.md` from that inventory so its checklist starts populated.
+- If a real `cxas pull` schema is available, validate your tree against it before pushing.
+
 ## Part A — CONSOLE RUNBOOK
 Numbered CX Agent Studio UI steps to create, in order: the App → each Agent (goal,
 instructions, tools attach, examples) → each Tool → each Guardrail → attach fallbacks &

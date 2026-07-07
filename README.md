@@ -54,6 +54,7 @@ sync.
 | `dist/cx-agent-builder.system.md` | One-file paste bundle (no-install path), built by `scripts/build-bundle.sh`. |
 | `docs/USING-CXAS-SKILLS.md` | How to install/use the 5 official cxas-scrapi skills and how this package maps to them. |
 | `docs/REVIEW.md` | Independent reviewer's assessment of the package (strengths, risks, verdict). |
+| `docs/REVIEW-GECX.md` | GECX-expert critique (grounding, examples, complexity tiering, foundry handoff…) + what was fixed. |
 | `docs/DEMO-TALK-TRACK.md` | Demo script + talk track for presenting to GECX developers. |
 | `docs/DEMO-RUNSHEET.md` | Minute-by-minute presenter runsheet with backup answers and fallbacks. |
 | `docs/demo-reel.html` | Self-running animated demo reel (~2:55) — full-screen and screen-record it. |

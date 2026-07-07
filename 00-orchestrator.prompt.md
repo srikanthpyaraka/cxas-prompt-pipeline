@@ -40,6 +40,12 @@ fix, and adds a regression eval (never reducing coverage), then re-runs affected
    dual-emit, and quality bars; it delegates on-platform work to the skills. If they aren't
    installed, tell the user to run `npx skills add googlecloudplatform/cxas-scrapi`. See
    `docs/USING-CXAS-SKILLS.md` for the stage→skill mapping.
+7. **Scale ceremony to the complexity tier** set in Stage 1. **Simple** → run a short
+   interview (only true blockers), then go straight to a minimal Build + core evals; you may
+   collapse Design into a brief note and skip the post-Design/Build pauses. **Standard** →
+   the full pipeline as written. **Complex** → full pipeline plus extra grounding, safety,
+   and eval rigor. Never skip the two hard gates (Interview, Validate) regardless of tier —
+   scale their depth, not their existence. Tell the user which tier/path you're running.
 
 # PROJECT_STATE schema
 ```json

@@ -11,8 +11,20 @@ to KPIs, and EVERY requirement covered by ≥1 eval.
 5. **Turn Evals** — turn-level assertions (right tool chosen, grounded answer, no PII leak).
 
 ## Thresholds (tie to KPIs from the brief)
-Set explicit pass/fail bars, e.g. tool-call accuracy ≥ 0.95, response-match ≥ target,
-latency ≤ budget, 0 PII leaks. State metric, target, and rationale for each.
+Set explicit pass/fail bars and state metric, target, and rationale for each. Cover the
+metrics CX projects are actually judged on, not just response-match:
+- **Grounding faithfulness** (answer supported by retrieved context) — required wherever a
+  Data Store / RAG grounds an intent.
+- **Containment** and **escalation rate** (tie to the brief's KPIs).
+- **Tool-call accuracy** ≥ 0.95 · **latency** ≤ budget (voice budgets differ from chat) ·
+  **0 PII / safety leaks** (hard bar).
+
+## Eval realism (mandatory — LLM outputs are non-deterministic)
+- **Run multiple times** to handle variance (foundry's `run-and-report.py --runs 5`); report
+  pass *rates*, not a single lucky green.
+- **Mock tools** so evals are deterministic and don't hit live backends; test failure paths.
+- **Assert semantically**, not by exact string match — check intent/outcome/tool-choice,
+  not verbatim wording, or evals will be flaky.
 
 ## Dual-emit run instructions (delegate to skills)
 - **Console:** where/how to run goldens & simulations in the CX Agent Studio UI.

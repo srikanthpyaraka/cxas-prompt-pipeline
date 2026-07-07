@@ -11,6 +11,15 @@ Goal: normalize it into a structured brief and expose every gap. Do NOT design y
 2. Decompose into **atomic requirements**, each with an ID and a full requirement record
    (see output-contract schema): `id, text, type, priority, status, source`.
 3. Flag risks, contradictions, and scope ambiguities.
+4. **Classify the complexity tier** — this scales how much ceremony the rest of the
+   pipeline applies (see the orchestrator):
+   - **Simple** — single agent, ≤2 intents, no writes, chat-only, static/KB answers (e.g. an
+     FAQ bot). → lean path: brief interview, straight to a minimal build + core evals.
+   - **Standard** — a few intents, 1–2 tools incl. a write, one channel (e.g. order status +
+     returns). → full pipeline.
+   - **Complex** — multi-agent/router, voice or multi-channel, sensitive data, or many
+     integrations. → full pipeline + extra grounding, safety, and eval rigor.
+   Record the tier and one-line justification in the brief.
 
 ## NORMALIZED_BRIEF fields
 - Business goal & success metrics / KPIs (containment, CSAT, AHT, resolution rate)

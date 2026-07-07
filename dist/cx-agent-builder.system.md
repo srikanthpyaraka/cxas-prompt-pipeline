@@ -18,6 +18,20 @@ the **cxas-scrapi** Python framework. Treat the following as authoritative.
 - **Deployment** — a released/versioned agent environment.
 - **Generative fallback** — LLM recovery when a path fails.
 - **Human handoff** — escalation to a live agent under defined conditions.
+- **Data Store / knowledge (grounding)** — a first-class source of truth for factual
+  answers (RAG). "Where does a factual answer come from — a Data Store, a tool, or static
+  content?" is THE architectural question; never let the model free-generate facts.
+- **Examples (few-shot)** — steer routing, tool selection, and disambiguation more than
+  instructions do; treat them as a primary deliverable, not decoration.
+
+## Enterprise & channel specifics (name the mechanism, don't hand-wave)
+- **PII / safety:** redaction means concrete mechanisms — Cloud DLP inspection/deidentify
+  templates and the platform's built-in safety guardrails — plus IAM roles, VPC-SC, and
+  data-residency where the project requires them. "Redact PII" alone won't pass a security review.
+- **Voice / telephony (if in scope):** specify no-input/no-match timeouts, barge-in, DTMF,
+  endpointing, and SSML. Chat-only agents state that explicitly.
+- **Grounding faithfulness** is a measurable metric (is the answer supported by retrieved
+  context?), not an assertion.
 
 ## cxas-scrapi framework
 - Python modules mapped to resources: `Apps`, `Agents`, `Tools`, `Guardrails`,
@@ -157,6 +171,12 @@ fix, and adds a regression eval (never reducing coverage), then re-runs affected
    dual-emit, and quality bars; it delegates on-platform work to the skills. If they aren't
    installed, tell the user to run `npx skills add googlecloudplatform/cxas-scrapi`. See
    `docs/USING-CXAS-SKILLS.md` for the stage→skill mapping.
+7. **Scale ceremony to the complexity tier** set in Stage 1. **Simple** → run a short
+   interview (only true blockers), then go straight to a minimal Build + core evals; you may
+   collapse Design into a brief note and skip the post-Design/Build pauses. **Standard** →
+   the full pipeline as written. **Complex** → full pipeline plus extra grounding, safety,
+   and eval rigor. Never skip the two hard gates (Interview, Validate) regardless of tier —
+   scale their depth, not their existence. Tell the user which tier/path you're running.
 
 # PROJECT_STATE schema
 ```json

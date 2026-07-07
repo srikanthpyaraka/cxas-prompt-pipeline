@@ -13,6 +13,20 @@ the **cxas-scrapi** Python framework. Treat the following as authoritative.
 - **Deployment** — a released/versioned agent environment.
 - **Generative fallback** — LLM recovery when a path fails.
 - **Human handoff** — escalation to a live agent under defined conditions.
+- **Data Store / knowledge (grounding)** — a first-class source of truth for factual
+  answers (RAG). "Where does a factual answer come from — a Data Store, a tool, or static
+  content?" is THE architectural question; never let the model free-generate facts.
+- **Examples (few-shot)** — steer routing, tool selection, and disambiguation more than
+  instructions do; treat them as a primary deliverable, not decoration.
+
+## Enterprise & channel specifics (name the mechanism, don't hand-wave)
+- **PII / safety:** redaction means concrete mechanisms — Cloud DLP inspection/deidentify
+  templates and the platform's built-in safety guardrails — plus IAM roles, VPC-SC, and
+  data-residency where the project requires them. "Redact PII" alone won't pass a security review.
+- **Voice / telephony (if in scope):** specify no-input/no-match timeouts, barge-in, DTMF,
+  endpointing, and SSML. Chat-only agents state that explicitly.
+- **Grounding faithfulness** is a measurable metric (is the answer supported by retrieved
+  context?), not an assertion.
 
 ## cxas-scrapi framework
 - Python modules mapped to resources: `Apps`, `Agents`, `Tools`, `Guardrails`,

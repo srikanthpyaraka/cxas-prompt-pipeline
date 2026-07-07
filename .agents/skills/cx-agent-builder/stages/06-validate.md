@@ -2,8 +2,11 @@
 Input: all prior artifacts. Goal: self-audit, assemble the deliverable, and get sign-off.
 You may not declare SHIP-READY until blockers are cleared AND the user confirms.
 
-## Lint self-audit (in the spirit of `cxas lint`, 60+ rules)
-Review and report findings by severity (Blocker / Warning / Info) across at least:
+## Lint audit — run the real linter, don't simulate it
+**Prefer running the actual `cxas lint`** via cxas-agent-foundry's `lint-fixer` sub-agent and
+parse its findings — that's the real 60+ rules, not an approximation. Only if the tool isn't
+available, fall back to the manual review below. Either way, report findings by severity
+(Blocker / Warning / Info) across at least:
 - Naming & structure hygiene; resource references resolve.
 - Grounding: no free-generated facts; KB/tool routing present.
 - Guardrail coverage: PII, off-topic/refusal, grounding on every agent.
