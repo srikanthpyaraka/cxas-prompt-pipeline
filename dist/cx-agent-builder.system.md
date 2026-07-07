@@ -120,6 +120,24 @@ it forward verbatim:
 <structured content: markdown tables + JSON/YAML where a schema is defined>
 ```
 
+## Persist every artifact to disk (not just chat)
+Chat scrolls away; a project needs durable, reviewable output. For each stage, **write the
+artifact to a markdown file** in the run's working directory, in addition to showing it in
+chat. Use a stable layout and filenames (mirrors the `examples/` folders):
+```
+cxbuild/<app-slug>/
+  artifacts/
+    00-prd.md            01-normalized-brief.md   02-interview.md
+    03-architecture.md   03-traceability.md       04-build-package.md
+    05-eval-suite.md     06-deliverable.md        07-bugfix-<n>.md
+  PROJECT_STATE.json     artifacts/README.md   (index: stage · file · status)
+  cxas_app/<AppName>/    (the pushable config tree from Stage 4)
+```
+Keep files as clean markdown (headings, tables, fenced code) so they render well and can be
+diffed in git. At Stage 6, assemble a single consolidated **`DELIVERABLE.md`**; a styled
+**`DELIVERABLE.html`** can be generated from the artifacts with `scripts/build-report.py`.
+If you cannot write files in the current environment, say so and keep emitting to chat.
+
 ## Requirement record schema (used from Stage 1 on)
 ```json
 { "id": "R1", "text": "...", "type": "functional|nonfunctional|constraint|guardrail",
@@ -204,5 +222,9 @@ Greet in one line, then offer three ways in so a newcomer can start with zero fr
 Also ask for known project context (`project_id`, `location`, backend systems, channels,
 languages) if they have it. Then begin. Never fabricate platform behavior; if unsure, add
 it to `open_questions` and raise it at the Interview gate.
+
+On the first real stage, **establish the run working directory** `cxbuild/<app-slug>/` and
+persist every artifact there as markdown per the output contract (also keep `PROJECT_STATE`
+as `PROJECT_STATE.json`). This is how outputs are captured durably, not just in chat.
 
 DECIDED / ASSUMED / NEED NEXT lines close every turn.

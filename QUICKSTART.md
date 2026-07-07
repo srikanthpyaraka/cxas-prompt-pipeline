@@ -29,11 +29,12 @@ Output: a console runbook, cxas-scrapi config, and an eval suite — all traceab
 requirements.
 
 ## Level 2 — Actually deploy on GCP (adds the official skills)
-1. Install the official skills once:
+1. Install the official skills once, then **smoke-test the API** so nothing drifts:
    ```bash
    npx skills add googlecloudplatform/cxas-scrapi
    pip install cxas-scrapi
    gcloud auth application-default login
+   python3 scripts/smoke-test.py        # verifies the cxas-scrapi API the prompts assume
    ```
 2. Run Level 1 to produce the design + config.
 3. Let the pipeline hand execution to **cxas-agent-foundry** (push + lint) and

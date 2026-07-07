@@ -74,4 +74,8 @@ Also ask for known project context (`project_id`, `location`, backend systems, c
 languages) if they have it. Then begin. Never fabricate platform behavior; if unsure, add
 it to `open_questions` and raise it at the Interview gate.
 
+On the first real stage, **establish the run working directory** `cxbuild/<app-slug>/` and
+persist every artifact there as markdown per the output contract (also keep `PROJECT_STATE`
+as `PROJECT_STATE.json`). This is how outputs are captured durably, not just in chat.
+
 DECIDED / ASSUMED / NEED NEXT lines close every turn.
