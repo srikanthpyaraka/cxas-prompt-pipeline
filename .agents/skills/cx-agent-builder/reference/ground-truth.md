@@ -24,7 +24,10 @@ the **cxas-scrapi** Python framework. Treat the following as authoritative.
   templates and the platform's built-in safety guardrails — plus IAM roles, VPC-SC, and
   data-residency where the project requires them. "Redact PII" alone won't pass a security review.
 - **Voice / telephony (if in scope):** specify no-input/no-match timeouts, barge-in, DTMF,
-  endpointing, and SSML. Chat-only agents state that explicitly.
+  endpointing, and SSML. Chat-only agents state that explicitly. **Voice is testable:**
+  SCRAPI Local Simulations accept `modality="audio"` (+ `voice_config`), exercising the
+  agent's TTS/STT pipeline and audio callbacks via the Sessions audio-streaming endpoint —
+  the simulated user's turns are text internally, so it tests the voice path, not raw acoustics.
 - **Grounding faithfulness** is a measurable metric (is the answer supported by retrieved
   context?), not an assertion.
 

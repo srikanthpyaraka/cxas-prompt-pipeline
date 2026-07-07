@@ -26,6 +26,19 @@ metrics CX projects are actually judged on, not just response-match:
 - **Assert semantically**, not by exact string match — check intent/outcome/tool-choice,
   not verbatim wording, or evals will be flaky.
 
+## Voice agents — run simulations in audio modality
+If the agent handles voice (per the Stage-3 channel decision), run Local Simulations in
+**`modality="audio"`** (default is `"text"`), which uses the Sessions API audio-streaming
+endpoint and exercises the agent's TTS/STT pipeline and audio callbacks:
+```python
+simulation.run(test_case=tc, modality="audio",
+               voice_config={"language_code": "en-US", "voice_name": "en-US-Standard-A"})
+```
+Caveat to set expectations: the simulated user's turns are still text internally, so this
+tests the voice *path* (TTS/STT + audio callbacks), not real acoustic robustness (noise,
+accents, human-ASR error). Semantic assertion matters even more here (phrasing varies more
+in voice). Cover DTMF / no-input / no-match / barge-in paths as their own simulation cases.
+
 ## Dual-emit run instructions (delegate to skills)
 - **Console:** where/how to run goldens & simulations in the CX Agent Studio UI.
 - **Config-as-code (prefer official skills):**
