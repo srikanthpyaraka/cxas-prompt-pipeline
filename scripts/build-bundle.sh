@@ -15,6 +15,11 @@ mkdir -p dist
   echo "# ===== GLOBAL OUTPUT CONTRACT ====="; echo
   cat shared/output-contract.md; echo
   echo "# ===== ORCHESTRATOR ====="; echo
-  cat 00-orchestrator.prompt.md
+  cat 00-orchestrator.prompt.md; echo
+  echo "# ===== STAGE CONTRACTS (read the relevant one as you reach each stage) ====="; echo
+  for f in 01-ingest 02-interview 03-design 04-build 05-evals 06-validate 07-debug-fix; do
+    echo; echo "## ---- $f ----"; echo
+    cat "$f.prompt.md"; echo
+  done
 } > "$OUT"
 echo "Wrote $OUT ($(wc -l < "$OUT" | tr -d ' ') lines)"
