@@ -5,6 +5,8 @@
 > `cxas-scrapi` config · **100% eval coverage** · a debug loop that turns every bug into a
 > regression test. Model-agnostic (Claude or Gemini).
 >
+> **How to use it → [`USAGE.md`](USAGE.md)** (three levels, exact commands).
+>
 > **Fastest start (installable Skill):** `npx skills add srikanthpyaraka/cxas-prompt-pipeline`
 > — then just ask "build a CXAS agent from this PRD" (it auto-triggers), or type **`demo`**.
 > No-install alternative: paste [`dist/cx-agent-builder.system.md`](dist/cx-agent-builder.system.md)
