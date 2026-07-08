@@ -56,6 +56,7 @@ sync.
 | `dist/cx-agent-builder.system.md` | One-file paste bundle (no-install path), built by `scripts/build-bundle.sh`. |
 | `scripts/smoke-test.py` | Verify the installed cxas-scrapi API **and** (with `--pull-dir`) a real `cxas pull` tree matches the expected JSON layout. |
 | `scripts/build-report.py` | Turn a run's captured markdown artifacts into a single `DELIVERABLE.md` + styled `DELIVERABLE.html`. |
+| `docs/TESTER-GUIDE.md` | For testers: access, smoke-test pre-flight, and a structured feedback template. |
 | `docs/USING-CXAS-SKILLS.md` | How to install/use the 5 official cxas-scrapi skills and how this package maps to them. |
 | `docs/REVIEW.md` | Independent reviewer's assessment of the package (strengths, risks, verdict). |
 | `docs/REVIEW-GECX.md` | GECX-expert critique (grounding, examples, complexity tiering, foundry handoff…) + what was fixed. |
