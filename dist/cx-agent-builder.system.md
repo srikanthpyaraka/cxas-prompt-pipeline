@@ -39,8 +39,17 @@ the **cxas-scrapi** Python framework. Treat the following as authoritative.
 ## cxas-scrapi framework
 - Python modules mapped to resources: `Apps`, `Agents`, `Tools`, `Guardrails`,
   `Deployments`, `Sessions`, `Variables`.
-- Config-as-code: `cxas pull` (platform → disk) and `cxas push` (disk → platform),
-  producing a directory tree (`app/`, `agents/`, `tools/`, `guardrails/`, `examples/`).
+- Config-as-code: `cxas pull` (platform → disk) and `cxas push` (disk → platform). The tree
+  is **JSON, one folder per resource named after it** — `app.json` at the root;
+  `agents/<Agent_DisplayName>/<Agent_DisplayName>.json` + a separate `instruction.txt` +
+  callback `python_code.py` files; `tools/<name>/<name>.json` (+ `python_function/python_code.py`);
+  `evaluations/` and `evaluationExpectations/` (evals live IN the app tree).
+  Agent JSON key fields: `displayName`, `model` (gemini-2.5-flash / gemini-3-flash /
+  gemini-3.1-flash-live), `instruction` (path), `tools` (tool displayNames), `childAgents`
+  (sub-agent displayNames), and `before/after Model|Tool|Agent Callbacks`. **Variables** are
+  declared in `app.json` `variableDeclarations`; `app.json` also holds `rootAgent`,
+  `evaluationMetricsThresholds`, `loggingSettings`, `timeZoneSettings`. Not YAML; no
+  top-level `guardrails/` or `examples/` folders — verify layout against a real `cxas pull`.
 - `cxas lint` — validates configs against **60+ best-practice rules**.
 - Auth: Application Default Credentials (`gcloud auth application-default login`),
   environment credentials on Cloud Run/Functions, or an explicit `creds_path`.
@@ -390,17 +399,36 @@ Input: `ARCHITECTURE` + `TRACEABILITY_MATRIX`. Goal: make the design real in CX 
 Studio, emitted BOTH as a console runbook AND as cxas-scrapi config-as-code, describing
 the same resources and kept in sync (see output-contract dual-emit rule).
 
-## Write to files, not chat — and hand off cleanly to cxas-agent-foundry
-- Emit the config **as files written into the layout the toolchain expects**:
-  `<project>/cxas_app/<AppName>/` with `app/`, `agents/`, `tools/`, `guardrails/`,
-  `examples/` (and `datastores/` where grounding uses a Data Store). This is what
-  `cxas push` consumes and what `cxas pull` produces — do not leave config as pasted
-  markdown on a real project.
-- **This suite is the front half foundry doesn't have.** Produce a single `HANDOFF` note
-  that tells cxas-agent-foundry exactly what to build and verify: the app path above, the
-  agent/tool/guardrail inventory, the grounding sources, and the eval definitions from
-  Stage 5. Seed the foundry `todo.md` from that inventory so its checklist starts populated.
-- If a real `cxas pull` schema is available, validate your tree against it before pushing.
+## Emit the REAL cxas pull/push format (JSON — not YAML, not markdown)
+Write files into the exact tree `cxas pull` produces / `cxas push` consumes. **Resources
+are JSON, one folder per resource named after it; instructions and callback/tool code are
+separate files referenced by relative path:**
+```
+<project>/cxas_app/<AppName>/
+  app.json                                  # displayName, rootAgent, variableDeclarations[], loggingSettings, evaluationMetricsThresholds, timeZoneSettings
+  agents/<Agent_DisplayName>/
+    <Agent_DisplayName>.json                # name(uuid), displayName, model?, instruction:"agents/<A>/instruction.txt", tools:[toolDisplayName], childAgents:[subAgentDisplayName], before/afterModel|Tool|AgentCallbacks:[{pythonCode:path, description}]
+    instruction.txt                         # the playbook instructions live HERE, not inline in JSON
+    before_model_callbacks/before_model_callbacks_01/python_code.py   # (and after_tool_/after_model_/before_agent_ as needed)
+  tools/<tool_name>/
+    <tool_name>.json                        # name(uuid), displayName, and ONE of: pythonFunction{name,pythonCode:path,description} | openApiTool{...} | dataStoreTool{...}
+    python_function/python_code.py           # for python tools
+  evaluations/<Eval_DisplayName>/<Eval_DisplayName>.json          # goldens (Stage 5 writes these) — turns/steps/expectations
+  evaluationExpectations/<Name>/<Name>.json
+```
+Key rules that people get wrong:
+- **Sub-agents** are the root/parent agent's `childAgents: []` (display names), not a folder.
+- **Variables** are declared in `app.json` `variableDeclarations` (each: `name`, `description`,
+  `schema:{type: OBJECT|STRING|…, default}`), not a `variables/` folder.
+- **`rootAgent`** in app.json names the steering agent by displayName.
+- **Evals are part of the app tree** (`evaluations/` + `evaluationExpectations/`); thresholds
+  go in app.json `evaluationMetricsThresholds`. Stage 5 populates these.
+- There is **no top-level `guardrails/` or `examples/` folder** — represent guardrails via the
+  app/agent safety config and few-shot examples via the platform's mechanism; verify against a real `cxas pull`.
+- **This suite is the front half foundry doesn't have.** Produce a single `HANDOFF` note for
+  cxas-agent-foundry: the app path, the agent/tool inventory, `childAgents` topology,
+  grounding sources, and the eval names. Seed the foundry `todo.md` from that inventory.
+- If a real `cxas pull` of a comparable app is available, diff your tree against it before pushing.
 
 ## Part A — CONSOLE RUNBOOK
 Numbered CX Agent Studio UI steps to create, in order: the App → each Agent (goal,
@@ -409,9 +437,8 @@ handoff → save/version. Note where a human must supply secrets/auth.
 
 ## Part B — CONFIG-AS-CODE (delegate to cxas-agent-foundry)
 Prefer the official **cxas-agent-foundry** skill over hand-written code. Emit:
-1. **Directory tree** for `cxas pull`/`push`:
-   `app/`, `agents/`, `tools/`, `guardrails/`, `examples/` — each resource's config
-   (YAML/JSON) fully populated from the design.
+1. **The JSON app tree above** for `cxas pull`/`push` — each resource's JSON + its
+   `instruction.txt` / `python_code.py` files, fully populated from the design.
 2. **Foundry runbook** (this is the code path):
    - `python .agents/skills/cxas-agent-foundry/scripts/inspect-app.py` to check current state.
    - `cxas push --app-dir <project>/cxas_app/<AppName> --to projects/<pid>/locations/<loc>/apps/<app_id> --project-id <pid> --location <loc>`
@@ -429,24 +456,28 @@ Prefer the official **cxas-agent-foundry** skill over hand-written code. Emit:
 Emit `BUILD_PACKAGE` (Console Runbook + tree + scripts + CLI) in an artifact block. Then
 PAUSE for user confirmation before Evals.
 
-## Example (dual-emit shape — keep both paths in sync)
+## Example (real cxas JSON tree — keep console + code in sync)
 <example>
-Console: 1) App → New agent "order_status_agent"  2) Add tool `get_order_status`
-(HTTP GET /orders/{id})  3) Attach PII guardrail  4) Set fallback → handoff.  [R1, R2]
+Console: 1) App → root agent "Order_Router"  2) sub-agent "Order_Status_Agent", add tool
+`get_order_status`  3) app safety/guardrail config  4) fallback → handoff.  [R1, R2]
 
 ```
-app/order-support.yaml
-agents/order_status_agent.yaml
-tools/get_order_status.yaml
-guardrails/pii_redaction.yaml
-```
-```python
-from cxas_scrapi import Agents, Tools  # ADC auth
-t = Tools(project_id=PROJECT_ID, location="global")
-t.create_or_update("get_order_status", spec_path="tools/get_order_status.yaml")  # R1
+cxas_app/OrderSupport/
+  app.json                     # {"displayName":"Order Support","rootAgent":"Order_Router","variableDeclarations":[...],"evaluationMetricsThresholds":{...}}
+  agents/Order_Router/
+    Order_Router.json          # {"displayName":"Order_Router","instruction":"agents/Order_Router/instruction.txt","childAgents":["Order_Status_Agent"],"tools":["end_session"]}
+    instruction.txt
+  agents/Order_Status_Agent/
+    Order_Status_Agent.json    # {"displayName":"Order_Status_Agent","instruction":"...instruction.txt","tools":["get_order_status"]}  [R1]
+    instruction.txt
+  tools/get_order_status/
+    get_order_status.json      # {"displayName":"get_order_status","openApiTool":{...}}  or pythonFunction{...,"pythonCode":"tools/get_order_status/python_function/python_code.py"}
+  evaluations/Order_Status_Happy_Path/Order_Status_Happy_Path.json   # golden (Stage 5)
 ```
 ```bash
-cxas push && cxas lint
+cxas push --app-dir cxas_app/OrderSupport --to projects/$PID/locations/$LOC/apps/$APP_ID \
+  --project-id $PID --location $LOC
+# then lint via cxas-agent-foundry's lint-fixer sub-agent
 ```
 </example>
 
@@ -466,6 +497,22 @@ to KPIs, and EVERY requirement covered by ≥1 eval.
 3. **Tool Tests** — per-tool input→expected-output cases INCLUDING failure paths.
 4. **Callback Tests** — pre/post-processing / callback logic checks.
 5. **Turn Evals** — turn-level assertions (right tool chosen, grounded answer, no PII leak).
+
+## Write goldens in the REAL platform format, into the app tree
+Platform Goldens are part of the `cxas` app tree (Stage 4), not a side doc. Write each as
+`evaluations/<Eval_DisplayName>/<Eval_DisplayName>.json`; put thresholds in `app.json`
+`evaluationMetricsThresholds`. A golden's shape:
+```json
+{ "displayName": "...", "description": "...", "tags": ["..."],
+  "golden": { "turns": [ { "steps": [
+    { "userInput": { "text": "I'd like a table for four" } },
+    { "expectation": { "note": "...", "agentTransfer": { "targetAgent": "Reservation_Agent" } } },
+    { "expectation": { "note": "...", "toolCall": { "tool": "set_reservation_basics", "args": { "party_size": 4 } } } },
+    { "expectation": { "note": "...", "updatedVariables": { "sm": { } } } }
+  ] } ] } }
+```
+Expectation types include `agentTransfer` (routing), `toolCall` (+args), and
+`updatedVariables`. Use `cxas-sim-eval` to derive `SimulationEvals` from these goldens.
 
 ## Thresholds (tie to KPIs from the brief)
 Set explicit pass/fail bars and state metric, target, and rationale for each. Cover the

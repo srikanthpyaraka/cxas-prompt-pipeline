@@ -17,44 +17,43 @@ STAGE 4 — BUILD (dual-emit: console runbook AND config-as-code)
 (In current guidance the code path delegates to the official cxas-agent-foundry skill —
 `inspect-app.py`, `cxas push`, lint via its `lint-fixer` sub-agent. Raw scrapi shown below
 for illustration of the underlying resources.)
-Tree:
-  app/cymbal_retail.yaml
-  agents/{cymbal_retail_agent,upsell_agent,out_of_scope_agent}.yaml
-  tools/{catalog_openapi,cart_openapi,identify_plant,google_search,end_session}.yaml
-  guardrails/{prompt_guard,blocklist,safety_outcomes}.yaml
-  callbacks/{before_model,after_model,after_tool}.py
-  variables/{customer_profile,image_uploaded,manager_discount_approved}.yaml
-
-Python (idempotent; ADC auth):
-```python
-import os
-from cxas_scrapi import Apps, Agents, Tools, Guardrails, Variables
-
-PID = os.environ["PROJECT_ID"]           # cymbal-cx-demo (placeholder)
-LOC = os.environ.get("LOCATION", "global")
-
-app  = Apps(project_id=PID, location=LOC).create_or_update("cymbal_retail", "app/cymbal_retail.yaml")
-V = Variables(project_id=PID, location=LOC)
-for v in ("customer_profile","image_uploaded","manager_discount_approved"):
-    V.create_or_update(v, spec_path=f"variables/{v}.yaml")
-T = Tools(project_id=PID, location=LOC)
-for t in ("catalog_openapi","cart_openapi","identify_plant","google_search","end_session"):
-    T.create_or_update(t, spec_path=f"tools/{t}.yaml")            # R1,R2,R3,R9,R10
-G = Guardrails(project_id=PID, location=LOC)
-for g in ("prompt_guard","blocklist","safety_outcomes"):
-    G.create_or_update(g, spec_path=f"guardrails/{g}.yaml")       # R8
-A = Agents(project_id=PID, location=LOC)
-for a in ("cymbal_retail_agent","upsell_agent","out_of_scope_agent"):
-    A.create_or_update(app, a, spec_path=f"agents/{a}.yaml")
+Real cxas pull/push tree (JSON; resource-per-folder; instructions + code as separate files):
 ```
+cxas_app/CymbalRetail/
+  app.json                       # displayName, rootAgent:"cymbal_retail_agent",
+                                 #   variableDeclarations:[customer_profile(OBJECT), image_uploaded, manager_discount_approved],
+                                 #   evaluationMetricsThresholds, loggingSettings, timeZoneSettings
+  agents/cymbal_retail_agent/
+    cymbal_retail_agent.json     # instruction:"agents/cymbal_retail_agent/instruction.txt",
+                                 #   childAgents:["upsell_agent","out_of_scope_agent"],
+                                 #   tools:["catalog_openapi","cart_openapi","identify_plant","google_search","end_session"],
+                                 #   beforeModelCallbacks/afterModelCallbacks/afterToolCallbacks:[{pythonCode:path,description}]   [R7,R8]
+    instruction.txt
+    before_model_callbacks/before_model_callbacks_01/python_code.py
+    after_model_callbacks/after_model_callbacks_01/python_code.py
+    after_tool_callbacks/after_tool_callbacks_01/python_code.py
+  agents/upsell_agent/upsell_agent.json + instruction.txt            # [R4]
+  agents/out_of_scope_agent/out_of_scope_agent.json + instruction.txt # [R5,R10]
+  tools/catalog_openapi/catalog_openapi.json          # {"displayName":"catalog_openapi","openApiTool":{...}}   [R1,R9]
+  tools/cart_openapi/cart_openapi.json                # openApiTool                                             [R3]
+  tools/identify_plant/identify_plant.json + python_function/python_code.py   # pythonFunction                 [R2]
+  tools/google_search/google_search.json              # built-in search tool                                   [R2,R9]
+  tools/end_session/end_session.json                  # system tool                                            [R10]
+  evaluations/… evaluationExpectations/…              # goldens (Stage 5) live here
+```
+Notes on the real format: guardrails (prompt guard / blocklist / safety outcomes) are app/agent
+safety config, not a `guardrails/` folder; variables are in `app.json.variableDeclarations`,
+not a `variables/` folder; sub-agents are the root agent's `childAgents`.
 
-CLI:
+Push:
 ```bash
-export PROJECT_ID=cymbal-cx-demo LOCATION=global
-cxas push && cxas lint
+export PID=cymbal-cx-demo LOC=global
+cxas push --app-dir cxas_app/CymbalRetail --to projects/$PID/locations/$LOC/apps/$APP_ID \
+  --project-id $PID --location $LOC
+# then lint via cxas-agent-foundry's lint-fixer sub-agent (don't run cxas lint on the main thread)
 ```
 ```
 
-SELF-CHECK: pass — 1 app / 3 agents / 5 tools / 3 guardrails / 3 callbacks / 3 variables;
+SELF-CHECK: pass — 1 app / 3 agents / 5 tools / 3 variables + safety config / 3 callbacks;
 both paths in sync; every resource cites its Rn. PAUSE before Evals.
 DECIDED: build emitted. ASSUMED: env secrets. NEED NEXT: Stage-5 evals.

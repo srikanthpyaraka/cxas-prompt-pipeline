@@ -34,8 +34,17 @@ the **cxas-scrapi** Python framework. Treat the following as authoritative.
 ## cxas-scrapi framework
 - Python modules mapped to resources: `Apps`, `Agents`, `Tools`, `Guardrails`,
   `Deployments`, `Sessions`, `Variables`.
-- Config-as-code: `cxas pull` (platform → disk) and `cxas push` (disk → platform),
-  producing a directory tree (`app/`, `agents/`, `tools/`, `guardrails/`, `examples/`).
+- Config-as-code: `cxas pull` (platform → disk) and `cxas push` (disk → platform). The tree
+  is **JSON, one folder per resource named after it** — `app.json` at the root;
+  `agents/<Agent_DisplayName>/<Agent_DisplayName>.json` + a separate `instruction.txt` +
+  callback `python_code.py` files; `tools/<name>/<name>.json` (+ `python_function/python_code.py`);
+  `evaluations/` and `evaluationExpectations/` (evals live IN the app tree).
+  Agent JSON key fields: `displayName`, `model` (gemini-2.5-flash / gemini-3-flash /
+  gemini-3.1-flash-live), `instruction` (path), `tools` (tool displayNames), `childAgents`
+  (sub-agent displayNames), and `before/after Model|Tool|Agent Callbacks`. **Variables** are
+  declared in `app.json` `variableDeclarations`; `app.json` also holds `rootAgent`,
+  `evaluationMetricsThresholds`, `loggingSettings`, `timeZoneSettings`. Not YAML; no
+  top-level `guardrails/` or `examples/` folders — verify layout against a real `cxas pull`.
 - `cxas lint` — validates configs against **60+ best-practice rules**.
 - Auth: Application Default Credentials (`gcloud auth application-default login`),
   environment credentials on Cloud Run/Functions, or an explicit `creds_path`.

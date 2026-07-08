@@ -10,6 +10,22 @@ to KPIs, and EVERY requirement covered by ≥1 eval.
 4. **Callback Tests** — pre/post-processing / callback logic checks.
 5. **Turn Evals** — turn-level assertions (right tool chosen, grounded answer, no PII leak).
 
+## Write goldens in the REAL platform format, into the app tree
+Platform Goldens are part of the `cxas` app tree (Stage 4), not a side doc. Write each as
+`evaluations/<Eval_DisplayName>/<Eval_DisplayName>.json`; put thresholds in `app.json`
+`evaluationMetricsThresholds`. A golden's shape:
+```json
+{ "displayName": "...", "description": "...", "tags": ["..."],
+  "golden": { "turns": [ { "steps": [
+    { "userInput": { "text": "I'd like a table for four" } },
+    { "expectation": { "note": "...", "agentTransfer": { "targetAgent": "Reservation_Agent" } } },
+    { "expectation": { "note": "...", "toolCall": { "tool": "set_reservation_basics", "args": { "party_size": 4 } } } },
+    { "expectation": { "note": "...", "updatedVariables": { "sm": { } } } }
+  ] } ] } }
+```
+Expectation types include `agentTransfer` (routing), `toolCall` (+args), and
+`updatedVariables`. Use `cxas-sim-eval` to derive `SimulationEvals` from these goldens.
+
 ## Thresholds (tie to KPIs from the brief)
 Set explicit pass/fail bars and state metric, target, and rationale for each. Cover the
 metrics CX projects are actually judged on, not just response-match:

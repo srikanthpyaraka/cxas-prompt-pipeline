@@ -19,49 +19,36 @@ STAGE 4 — BUILD (dual-emit: console runbook AND config-as-code)
 (In current guidance the code path delegates to the official cxas-agent-foundry skill —
 `inspect-app.py`, `cxas push`, lint via its `lint-fixer` sub-agent. Raw scrapi shown below
 for illustration of the underlying resources.)
-Tree (cxas pull/push):
-  app/orderbot.yaml
-  agents/router.yaml
-  agents/order_status_agent.yaml
-  agents/returns_agent.yaml
-  agents/faq_agent.yaml
-  tools/get_order_status.yaml
-  tools/create_return.yaml
-  tools/search_kb.yaml
-  guardrails/pii_redaction.yaml
-  guardrails/pci_block.yaml
-  guardrails/off_topic_refusal.yaml
-
-Python (idempotent create-or-update; ADC auth):
-```python
-import os
-from cxas_scrapi import Apps, Agents, Tools, Guardrails  # gcloud auth application-default login
-
-PROJECT_ID = os.environ["PROJECT_ID"]     # e.g. acme-cx-prod (placeholder)
-LOCATION   = os.environ.get("LOCATION", "global")
-
-apps  = Apps(project_id=PROJECT_ID, location=LOCATION)
-tools = Tools(project_id=PROJECT_ID, location=LOCATION)
-guard = Guardrails(project_id=PROJECT_ID, location=LOCATION)
-agents = Agents(project_id=PROJECT_ID, location=LOCATION)
-
-app = apps.create_or_update("orderbot", spec_path="app/orderbot.yaml")
-for name in ("get_order_status", "create_return", "search_kb"):       # R1, R2, R3
-    tools.create_or_update(name, spec_path=f"tools/{name}.yaml")
-for name in ("pii_redaction", "pci_block", "off_topic_refusal"):       # R5, R6, R4
-    guard.create_or_update(name, spec_path=f"guardrails/{name}.yaml")
-for name in ("router", "order_status_agent", "returns_agent", "faq_agent"):
-    agents.create_or_update(app, name, spec_path=f"agents/{name}.yaml")
+Real cxas pull/push tree (JSON; resource-per-folder; instructions + code as separate files):
 ```
+cxas_app/OrderBot/
+  app.json                       # displayName, rootAgent:"router",
+                                 #   variableDeclarations:[...], evaluationMetricsThresholds, loggingSettings
+  agents/router/
+    router.json                  # instruction:"agents/router/instruction.txt",
+                                 #   childAgents:["order_status_agent","returns_agent","faq_agent"], tools:["end_session"]  [R4]
+    instruction.txt
+  agents/order_status_agent/order_status_agent.json + instruction.txt   # tools:["get_order_status"]  [R1]
+  agents/returns_agent/returns_agent.json + instruction.txt             # tools:["create_return"]     [R2]
+  agents/faq_agent/faq_agent.json + instruction.txt                     # tools:["search_kb"]         [R3]
+  tools/get_order_status/get_order_status.json    # {"openApiTool":{...}}   [R1]
+  tools/create_return/create_return.json          # openApiTool (write)     [R2]
+  tools/search_kb/search_kb.json                  # dataStoreTool (grounding) [R3]
+  evaluations/… evaluationExpectations/…          # goldens (Stage 5) live here
+```
+Real-format notes: guardrails (PII redaction / PCI block / off-topic refusal) are app/agent
+safety config — Cloud DLP for redaction — not a `guardrails/` folder; sub-agents are the
+router's `childAgents`; variables live in `app.json.variableDeclarations`.
 
-CLI runbook:
+Push:
 ```bash
-export PROJECT_ID=acme-cx-prod LOCATION=global
-cxas push          # sync the tree to the platform
-cxas lint          # 60+ best-practice rules — must be clean before deploy
+export PID=acme-cx-prod LOC=global
+cxas push --app-dir cxas_app/OrderBot --to projects/$PID/locations/$LOC/apps/$APP_ID \
+  --project-id $PID --location $LOC
+# then lint via cxas-agent-foundry's lint-fixer sub-agent (don't run cxas lint on the main thread)
 ```
 ```
 
-SELF-CHECK: pass — both paths describe the same 1 app / 4 agents / 3 tools / 3 guardrails;
+SELF-CHECK: pass — 1 app / 4 agents (router + 3 childAgents) / 3 tools / safety config;
 every resource cites its Rn; each agent has fallback + handoff. PAUSE before Evals.
 DECIDED: config-as-code + console emitted. ASSUMED: env vars for secrets. NEED NEXT: Stage-5 evals.
