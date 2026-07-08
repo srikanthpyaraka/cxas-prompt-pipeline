@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CX Agent Builder — Interactive Overview</title>
+<style>
+  :root{
+    --navy:#1E2761; --deep:#141A47; --ice:#CADCFC; --teal:#02C39A; --teal2:#00A896;
+    --muted:#5B6785; --tint:#F2F6FF; --ink:#22284B; --mint:#EAF7F3; --line:#dce3f4;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#0b0d1c;font-family:"Segoe UI",Calibri,Arial,sans-serif;overflow:hidden}
+  #wrap{position:fixed;inset:0;overflow:hidden}
+  #stage{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:1200px;height:760px;background:#fff;border-radius:12px;overflow:hidden;
+    box-shadow:0 30px 90px rgba(0,0,0,.5);display:flex;flex-direction:column}
+  header{background:var(--navy);color:#fff;padding:20px 30px}
+  header .t{font-family:Cambria,Georgia,serif;font-size:30px;font-weight:700}
+  header .s{color:var(--ice);font-size:16px;margin-top:3px}
+  nav{display:flex;gap:8px;padding:14px 30px 0}
+  nav button{font:inherit;font-size:15px;font-weight:600;border:0;cursor:pointer;
+    padding:9px 18px;border-radius:9px 9px 0 0;background:var(--tint);color:var(--navy)}
+  nav button.on{background:var(--navy);color:#fff}
+  main{flex:1;padding:22px 30px;overflow:auto}
+  .panel{display:none;height:100%}
+  .panel.on{display:block;animation:fade .3s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  h2{font-family:Cambria,serif;color:var(--navy);font-size:22px;margin-bottom:12px}
+  .lead{font-size:17px;color:var(--ink);margin-bottom:18px;line-height:1.5}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .card{background:var(--tint);border-radius:12px;padding:16px 18px}
+  .card.mint{background:var(--mint)}
+  .card h3{font-family:Cambria,serif;color:var(--navy);font-size:16px;margin-bottom:5px}
+  .card p{color:var(--ink);font-size:13.5px;line-height:1.45}
+  .stats{display:flex;gap:14px;margin-top:16px}
+  .stat{flex:1;background:var(--navy);color:#fff;border-radius:12px;padding:14px 16px;text-align:center}
+  .stat b{font-family:Cambria,serif;font-size:30px;color:var(--teal);display:block}
+  .stat span{font-size:12px;color:var(--ice)}
+  /* pipeline */
+  .pipe{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+  .node{flex:1;min-width:90px;cursor:pointer;border:2px solid var(--line);border-radius:10px;
+    padding:10px 6px;text-align:center;background:#fff;transition:.15s}
+  .node:hover{border-color:var(--teal2)}
+  .node.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .node.gate.on{background:var(--teal2);border-color:var(--teal2)}
+  .node .n{font-size:11px;font-weight:700;color:var(--teal2)}
+  .node.on .n{color:var(--ice)}
+  .node .l{font-family:Cambria,serif;font-weight:700;font-size:14px;margin-top:2px}
+  .detail{background:var(--tint);border-radius:12px;padding:20px 22px;min-height:230px}
+  .detail .badge{display:inline-block;background:var(--teal2);color:#fff;font-size:11px;
+    font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:8px}
+  .detail h3{font-family:Cambria,serif;color:var(--navy);font-size:20px;margin-bottom:8px}
+  .detail p{color:var(--ink);font-size:15px;line-height:1.55;margin-bottom:8px}
+  .detail .out{font-size:13px;color:var(--muted)}
+  code,pre{font-family:"Courier New",monospace}
+  pre{background:var(--deep);color:var(--ice);border-radius:10px;padding:16px;font-size:13px;line-height:1.5;overflow:auto}
+  .tree{white-space:pre;font-size:13px;color:var(--ink);background:var(--tint);border-radius:10px;padding:16px;line-height:1.55}
+  .tree b{color:var(--navy)} .tree i{color:var(--teal2);font-style:normal}
+  .levels{display:flex;flex-direction:column;gap:12px}
+  .lvl{background:var(--tint);border-radius:12px;padding:14px 18px;display:flex;gap:14px;align-items:flex-start}
+  .lvl .k{font-family:Cambria,serif;font-weight:700;color:#fff;background:var(--navy);border-radius:8px;
+    padding:6px 12px;font-size:14px;white-space:nowrap}
+  .lvl .b{font-size:14px;color:var(--ink);line-height:1.5}
+  .hint{position:fixed;bottom:10px;left:16px;color:#5f6c8f;font-size:12px}
+  .foot{position:fixed;bottom:10px;right:16px;color:#5f6c8f;font-size:12px}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage">
+  <header>
+    <div class="t">CX Agent Builder</div>
+    <div class="s">PRD in → a designed, built &amp; evaluated CX Agent Studio agent out. Built on the official cxas-scrapi skills.</div>
+  </header>
+  <nav id="tabs"></nav>
+  <main>
+    <!-- OVERVIEW -->
+    <section class="panel on" data-tab="Overview">
+      <p class="lead">Turning a PRD into a production CX agent is manual, inconsistent, and under-tested.
+        This is a 7-stage prompt pipeline that fixes that — model-agnostic (Claude or Gemini),
+        delegating on-platform work to Google's official <code>cxas-scrapi</code> skills.</p>
+      <div class="grid">
+        <div class="card"><h3>Interview gate</h3><p>It asks the blocking questions and won't design until they're answered. No building on guesses.</p></div>
+        <div class="card mint"><h3>Dual output</h3><p>The same agent as a console runbook <b>and</b> real <code>cxas</code> JSON config — UI and CI/CD stay in sync.</p></div>
+        <div class="card"><h3>Test-first</h3><p>All 5 eval types with KPI thresholds; every requirement traces to a test.</p></div>
+        <div class="card mint"><h3>Debug loop</h3><p>Every bug becomes a documented root cause + a permanent regression test.</p></div>
+        <div class="card"><h3>Grounded</h3><p>Facts route through Data Stores / tools; guardrails on every agent.</p></div>
+        <div class="card mint"><h3>Complexity-tiered</h3><p>Simple bots get a lean path; complex voice/multi-agent gets full rigor.</p></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b>7</b><span>stages · 2 hard gates</span></div>
+        <div class="stat"><b>100%</b><span>requirement → eval coverage</span></div>
+        <div class="stat"><b>5</b><span>official skills orchestrated</span></div>
+      </div>
+    </section>
+
+    <!-- PIPELINE -->
+    <section class="panel" data-tab="Pipeline">
+      <div class="pipe" id="pipe"></div>
+      <div class="detail" id="detail"></div>
+    </section>
+
+    <!-- FORMAT -->
+    <section class="panel" data-tab="Format">
+      <h2>Real CX Agent Studio format (matches the cxas-agent-foundry project template)</h2>
+      <div class="tree"><b>&lt;project&gt;/</b>
+  <b>cxas_app/&lt;App&gt;/</b>                      <i># the pushable app — JSON, one folder per resource</i>
+    app.json                          <i># displayName, rootAgent, variableDeclarations, thresholds</i>
+    agents/&lt;Agent&gt;/&lt;Agent&gt;.json        <i># instruction:"…/instruction.txt", tools:[…], childAgents:[…]</i>
+    agents/&lt;Agent&gt;/instruction.txt      <i># playbook instructions live here, not inline</i>
+    tools/&lt;tool&gt;/&lt;tool&gt;.json            <i># pythonFunction | openApiTool | dataStoreTool</i>
+  <b>evals/</b>                            <i># eval AUTHORING — YAML (Stage 5)</i>
+    goldens/*.yaml  simulations/*.yaml  callback_tests/…
+      </div>
+      <p class="lead" style="margin-top:14px;font-size:14px">Sub-agents = <code>childAgents</code>. Variables live in <code>app.json</code>. Guardrails = safety config (no folder). Verify a real build with <code>scripts/smoke-test.py --pull-dir cxas_app/&lt;App&gt;</code>.</p>
+    </section>
+
+    <!-- USE IT -->
+    <section class="panel" data-tab="Use it">
+      <div class="levels">
+        <div class="lvl"><span class="k">Level 0 · watch</span><span class="b">Paste <code>dist/cx-agent-builder.system.md</code> into Claude/Gemini → type <b>demo</b>. Full run on a sample PRD, zero setup.</span></div>
+        <div class="lvl"><span class="k">Level 1 · build</span><span class="b">Install the skill (<code>cp -R .agents/skills/cx-agent-builder ~/.claude/skills/</code>) → "build a CX Agent Studio agent from this PRD". Outputs land in <code>cxbuild/&lt;app&gt;/</code>.</span></div>
+        <div class="lvl"><span class="k">Level 2 · deploy</span><span class="b"><code>npx skills add googlecloudplatform/cxas-scrapi</code> · <code>pip install cxas-scrapi</code> · <code>python3 scripts/smoke-test.py</code> → foundry does push/lint/evals on GCP.</span></div>
+      </div>
+      <pre style="margin-top:16px">Remember one thing:  paste dist/cx-agent-builder.system.md  →  type  demo</pre>
+    </section>
+  </main>
+</div></div>
+<div class="hint">← → or click to navigate · 1–4 for tabs</div>
+<div class="foot">github.com/srikanthpyaraka/cxas-prompt-pipeline</div>
+
+<script>
+const TABS = ["Overview","Pipeline","Format","Use it"];
+const STAGES = [
+  ["1","Ingest",0,"Normalize any input","Any PRD, notes, or bullets → numbered requirements (IDs + priority). Flags what's missing as UNKNOWN instead of inventing it, and classifies complexity so simple bots get a lean path.","Output: NORMALIZED_BRIEF"],
+  ["2","Interview",1,"◆ Hard gate","Batched, prioritized questions — each with a sensible default. It will NOT proceed to design until the P0 blockers are resolved (or you say 'assume defaults', which get logged).","Output: RESOLVED_BRIEF + ASSUMPTIONS_LOG"],
+  ["3","Design",0,"Architecture + traceability","App → agents → tools → guardrails. Forces a grounding decision per intent (Data Store / tool / static), mandates example coverage, and maps every requirement → design → eval.","Output: ARCHITECTURE + TRACEABILITY_MATRIX"],
+  ["4","Build",0,"Dual-emit, real format","A console runbook AND the real cxas JSON app tree (cxas_app/<App>/). Delegates push + lint to the official cxas-agent-foundry skill.","Output: BUILD_PACKAGE (cxas_app/ + HANDOFF)"],
+  ["5","Evals",0,"All 5 types, 100% coverage","Goldens, simulations, tool/callback/turn evals as foundry YAML. KPI-tied thresholds; audio modality for voice agents; variance-aware runs with tool mocks.","Output: EVAL_SUITE (evals/*.yaml)"],
+  ["6","Validate",1,"◆ Hard gate","Runs the real cxas lint via foundry's lint-fixer (0 blockers to pass), assembles a consolidated deliverable, and requires sign-off before ship.","Output: DELIVERABLE + sign-off"],
+  ["7","Debug",0,"Regression loop","Any failing eval → reproduce → root cause → minimal fix that generalizes → a new regression eval (RED before, GREEN after). Coverage never drops.","Output: BUGFIX_RECORD + new eval"],
+];
+let tab=0, stage=0;
+const nav=document.getElementById("tabs"), panels=[...document.querySelectorAll(".panel")];
+TABS.forEach((t,i)=>{const b=document.createElement("button");b.textContent=t;b.onclick=()=>setTab(i);nav.appendChild(b);});
+function setTab(i){tab=(i+TABS.length)%TABS.length;
+  [...nav.children].forEach((b,k)=>b.classList.toggle("on",k===tab));
+  panels.forEach((p,k)=>p.classList.toggle("on",k===tab));
+  if(tab===1) renderStage();}
+const pipe=document.getElementById("pipe");
+STAGES.forEach((s,i)=>{const d=document.createElement("div");
+  d.className="node"+(s[2]?" gate":"");d.innerHTML=`<div class="n">${s[0]}${s[2]?" ◆":""}</div><div class="l">${s[1]}</div>`;
+  d.onclick=()=>{stage=i;renderStage();};pipe.appendChild(d);});
+function renderStage(){[...pipe.children].forEach((n,k)=>n.classList.toggle("on",k===stage));
+  const s=STAGES[stage];
+  document.getElementById("detail").innerHTML=
+    `<span class="badge">Stage ${s[0]} · ${s[3]}</span><h3>${s[1]}</h3><p>${s[4]}</p><p class="out">${s[5]}</p>`;}
+document.addEventListener("keydown",e=>{
+  if(e.key>="1"&&e.key<="4"){setTab(+e.key-1);}
+  else if(e.key==="ArrowRight"){ if(tab===1&&stage<6){stage++;renderStage();} else setTab(tab+1); }
+  else if(e.key==="ArrowLeft"){ if(tab===1&&stage>0){stage--;renderStage();} else setTab(tab-1); }
+});
+function fit(){const sc=Math.min(innerWidth/1200,innerHeight/760);document.getElementById("stage").style.transform=`translate(-50%,-50%) scale(${sc})`;}
+addEventListener("resize",fit);
+setTab(0);renderStage();fit();
+</script>
+</body>
+</html>
