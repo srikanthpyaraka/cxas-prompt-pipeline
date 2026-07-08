@@ -27,6 +27,21 @@ build** will surface more truth than any further review. Priority-one before wid
 2. Pin the cxas-scrapi API surface to the installed version (smoke test).
 3. Date-stamp `ground-truth` and set a re-verify cadence as the platform evolves.
 
+## Round 2 — pre-share readiness review (fixes applied)
+Verified specific claims against the repo (bella_notte pull + the cxas-agent-foundry
+`project-template`), not a single example:
+
+| # | Finding | Status |
+|---|---------|--------|
+| R2-1 | Build/Eval emitted the *pulled* JSON `evaluations/` form, but foundry (our handoff) authors evals as **YAML in a sibling `evals/`** folder (`goldens/`, `simulations/`, `callback_tests/`). | ✅ Build now targets the foundry project layout (`cxas_app/<App>/` JSON + sibling `evals/`); `05-evals` emits the real golden/simulation YAML (turns + `tool_calls` + NL `expectations` + `tags`; personas with `goal`/`response_guide`/`max_turns`). |
+| R2-2 | Risk of asserting wrong/invented model IDs. | ✅ Confirmed `gemini-2.5-flash` + `gemini-3-flash` exist in-repo; corrected guidance to not invent per-agent model keys (model is typically an app-level default). |
+| R2-3 | "No guardrails/variables folders" was from one example. | ✅ Re-confirmed via the `adding_guardrails` scenario + template (guardrails = app/agent safety config; variables = app.json). Dropped the uncertain `examples/` false-warn from the smoke test. |
+| R2-4 | Smoke test only knew the pulled form. | ✅ Now accepts both pulled (`evaluations/`) and foundry authoring (sibling `evals/goldens`); `--pull-dir` documented as the `cxas_app/<App>` dir. Tested on good/bad/foundry fixtures. |
+
+**Round-2 verdict: safe to share for testing.** The format now matches the actual
+cxas-agent-foundry project template, so what testers generate lines up with what the
+official skill expects. The gating risk remains the same single item below.
+
 ## Still-open smaller items (backlog)
 - Vertical question banks for the interview (retail/telco/airline/banking) so it asks the
   5 questions that matter, faster.

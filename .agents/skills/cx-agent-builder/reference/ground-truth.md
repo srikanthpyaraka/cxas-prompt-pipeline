@@ -45,6 +45,13 @@ the **cxas-scrapi** Python framework. Treat the following as authoritative.
   declared in `app.json` `variableDeclarations`; `app.json` also holds `rootAgent`,
   `evaluationMetricsThresholds`, `loggingSettings`, `timeZoneSettings`. Not YAML; no
   top-level `guardrails/` or `examples/` folders — verify layout against a real `cxas pull`.
+- **Foundry project layout (the handoff target).** cxas-agent-foundry works in a project dir:
+  the pushable app at `cxas_app/<App>/` (the JSON tree above) **plus** a sibling `evals/`
+  folder for eval *authoring* in **YAML** — `evals/goldens/*.yaml`, `evals/simulations/*.yaml`,
+  `evals/callback_tests/…`. Author evals as YAML (goldens = deterministic turns with
+  `tool_calls`/`expectations`/`tags`; simulations = goal/`response_guide` personas). The JSON
+  `evaluations/` form is only the *pulled* platform representation. Model IDs seen in the wild:
+  `gemini-2.5-flash`, `gemini-3-flash`.
 - `cxas lint` — validates configs against **60+ best-practice rules**.
 - Auth: Application Default Credentials (`gcloud auth application-default login`),
   environment credentials on Cloud Run/Functions, or an explicit `creds_path`.

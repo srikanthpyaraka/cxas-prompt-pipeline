@@ -34,7 +34,7 @@ cxas_app/OrderBot/
   tools/get_order_status/get_order_status.json    # {"openApiTool":{...}}   [R1]
   tools/create_return/create_return.json          # openApiTool (write)     [R2]
   tools/search_kb/search_kb.json                  # dataStoreTool (grounding) [R3]
-  evaluations/… evaluationExpectations/…          # goldens (Stage 5) live here
+(eval authoring is a SIBLING of cxas_app/: <project>/evals/goldens/*.yaml + simulations/*.yaml — Stage 5)
 ```
 Real-format notes: guardrails (PII redaction / PCI block / off-topic refusal) are app/agent
 safety config — Cloud DLP for redaction — not a `guardrails/` folder; sub-agents are the

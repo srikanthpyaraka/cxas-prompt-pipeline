@@ -39,7 +39,7 @@ cxas_app/CymbalRetail/
   tools/identify_plant/identify_plant.json + python_function/python_code.py   # pythonFunction                 [R2]
   tools/google_search/google_search.json              # built-in search tool                                   [R2,R9]
   tools/end_session/end_session.json                  # system tool                                            [R10]
-  evaluations/… evaluationExpectations/…              # goldens (Stage 5) live here
+(eval authoring is a SIBLING of cxas_app/: <project>/evals/goldens/*.yaml + simulations/*.yaml — Stage 5)
 ```
 Notes on the real format: guardrails (prompt guard / blocklist / safety outcomes) are app/agent
 safety config, not a `guardrails/` folder; variables are in `app.json.variableDeclarations`,

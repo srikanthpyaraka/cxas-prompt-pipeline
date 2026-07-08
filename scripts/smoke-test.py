@@ -73,7 +73,9 @@ def check_api():
 
 # ---- expected cxas pull/push tree layout (verified against bella_notte) ----
 TOOL_TYPE_KEYS = ("pythonFunction", "openApiTool", "dataStoreTool")
-UNEXPECTED_DIRS = ("guardrails", "examples", "variables", "callbacks")
+# Inside the app dir these folders indicate the wrong format (guardrails=safety config,
+# variables=app.json, callbacks live under agents/<a>/..._callbacks/).
+UNEXPECTED_DIRS = ("guardrails", "variables", "callbacks")
 
 def _json(path):
     try:
@@ -124,9 +126,14 @@ def check_pull_tree(root):
                 f"tools/{name}: type block " + (next((k for k in TOOL_TYPE_KEYS if k in data), "") or f"none of {TOOL_TYPE_KEYS}"))
     else:
         add(WARN, "tools/ folder absent (ok only if the app has no tools)")
-    # evals in the tree
-    add(OK if os.path.isdir(os.path.join(root, "evaluations")) else WARN,
-        "evaluations/ present" if os.path.isdir(os.path.join(root, "evaluations")) else "evaluations/ absent (goldens live in the app tree)")
+    # evals: pulled form = evaluations/ inside the app; foundry authoring = sibling <project>/evals/goldens
+    proj = os.path.dirname(os.path.dirname(os.path.abspath(root)))   # <project> when root is cxas_app/<App>
+    if os.path.isdir(os.path.join(root, "evaluations")):
+        add(OK, "evaluations/ present (pulled platform form)")
+    elif os.path.isdir(os.path.join(proj, "evals", "goldens")):
+        add(OK, "sibling evals/goldens present (foundry authoring form)")
+    else:
+        add(WARN, "no evals found (expected evaluations/ in a pull, or ../evals/goldens in a foundry project)")
     # unexpected structures
     for d in UNEXPECTED_DIRS:
         if os.path.isdir(os.path.join(root, d)):
@@ -137,7 +144,7 @@ def check_pull_tree(root):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--pull-dir", help="path to a real `cxas pull` app dir (cxas_app/<App>) to validate")
+    ap.add_argument("--pull-dir", help="path to the app dir `cxas_app/<App>` (from a real cxas pull or a build) to validate")
     ap.add_argument("--layout-only", action="store_true", help="only run the tree-layout check")
     a = ap.parse_args()
     print("cxas-scrapi smoke test\n")

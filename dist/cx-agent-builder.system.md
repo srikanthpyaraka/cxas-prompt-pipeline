@@ -50,6 +50,13 @@ the **cxas-scrapi** Python framework. Treat the following as authoritative.
   declared in `app.json` `variableDeclarations`; `app.json` also holds `rootAgent`,
   `evaluationMetricsThresholds`, `loggingSettings`, `timeZoneSettings`. Not YAML; no
   top-level `guardrails/` or `examples/` folders — verify layout against a real `cxas pull`.
+- **Foundry project layout (the handoff target).** cxas-agent-foundry works in a project dir:
+  the pushable app at `cxas_app/<App>/` (the JSON tree above) **plus** a sibling `evals/`
+  folder for eval *authoring* in **YAML** — `evals/goldens/*.yaml`, `evals/simulations/*.yaml`,
+  `evals/callback_tests/…`. Author evals as YAML (goldens = deterministic turns with
+  `tool_calls`/`expectations`/`tags`; simulations = goal/`response_guide` personas). The JSON
+  `evaluations/` form is only the *pulled* platform representation. Model IDs seen in the wild:
+  `gemini-2.5-flash`, `gemini-3-flash`.
 - `cxas lint` — validates configs against **60+ best-practice rules**.
 - Auth: Application Default Credentials (`gcloud auth application-default login`),
   environment credentials on Cloud Run/Functions, or an explicit `creds_path`.
@@ -403,28 +410,35 @@ the same resources and kept in sync (see output-contract dual-emit rule).
 Write files into the exact tree `cxas pull` produces / `cxas push` consumes. **Resources
 are JSON, one folder per resource named after it; instructions and callback/tool code are
 separate files referenced by relative path:**
+Match the **cxas-agent-foundry project layout** (its `assets/project-template`), since we
+hand off to foundry — the pushable app under `cxas_app/<App>/` (JSON) and eval **authoring**
+as YAML in a sibling `evals/` folder (Stage 5 fills that):
 ```
-<project>/cxas_app/<AppName>/
-  app.json                                  # displayName, rootAgent, variableDeclarations[], loggingSettings, evaluationMetricsThresholds, timeZoneSettings
-  agents/<Agent_DisplayName>/
-    <Agent_DisplayName>.json                # name(uuid), displayName, model?, instruction:"agents/<A>/instruction.txt", tools:[toolDisplayName], childAgents:[subAgentDisplayName], before/afterModel|Tool|AgentCallbacks:[{pythonCode:path, description}]
-    instruction.txt                         # the playbook instructions live HERE, not inline in JSON
-    before_model_callbacks/before_model_callbacks_01/python_code.py   # (and after_tool_/after_model_/before_agent_ as needed)
-  tools/<tool_name>/
-    <tool_name>.json                        # name(uuid), displayName, and ONE of: pythonFunction{name,pythonCode:path,description} | openApiTool{...} | dataStoreTool{...}
-    python_function/python_code.py           # for python tools
-  evaluations/<Eval_DisplayName>/<Eval_DisplayName>.json          # goldens (Stage 5 writes these) — turns/steps/expectations
-  evaluationExpectations/<Name>/<Name>.json
+<project>/
+  cxas_app/<AppName>/
+    app.json                                # displayName, rootAgent, variableDeclarations[], loggingSettings, evaluationMetricsThresholds, timeZoneSettings
+    agents/<Agent_DisplayName>/
+      <Agent_DisplayName>.json              # displayName, instruction:"agents/<A>/instruction.txt", tools:[toolDisplayName], childAgents:[subAgentDisplayName], before/afterModel|Tool|AgentCallbacks:[{pythonCode:path, description}]
+      instruction.txt                       # the playbook instructions live HERE, not inline in JSON
+      before_model_callbacks/before_model_callbacks_01/python_code.py   # (and after_tool_/after_model_/before_agent_ as needed)
+    tools/<tool_name>/
+      <tool_name>.json                      # displayName + ONE of: pythonFunction{name,pythonCode:path,description} | openApiTool{...} | dataStoreTool{...}
+      python_function/python_code.py         # for python tools
+  evals/                                     # Stage 5 writes these (foundry authoring format, YAML)
+    goldens/*.yaml   simulations/*.yaml   callback_tests/...
 ```
 Key rules that people get wrong:
 - **Sub-agents** are the root/parent agent's `childAgents: []` (display names), not a folder.
 - **Variables** are declared in `app.json` `variableDeclarations` (each: `name`, `description`,
   `schema:{type: OBJECT|STRING|…, default}`), not a `variables/` folder.
-- **`rootAgent`** in app.json names the steering agent by displayName.
-- **Evals are part of the app tree** (`evaluations/` + `evaluationExpectations/`); thresholds
-  go in app.json `evaluationMetricsThresholds`. Stage 5 populates these.
-- There is **no top-level `guardrails/` or `examples/` folder** — represent guardrails via the
-  app/agent safety config and few-shot examples via the platform's mechanism; verify against a real `cxas pull`.
+- **`rootAgent`** in app.json names the steering agent by displayName. **Model / generative
+  settings** (e.g. gemini-2.5-flash, gemini-3-flash) are set per the console/pull — often an
+  app-level default rather than in each agent JSON; don't invent per-agent model keys.
+- **Evals authoring lives in the sibling `evals/` folder as YAML** (Stage 5). The JSON
+  `evaluations/` + `evaluationExpectations/` folders are the *pulled* platform form; thresholds
+  live in app.json `evaluationMetricsThresholds`.
+- There is **no top-level `guardrails/`, `examples/`, or `variables/` folder inside the app** —
+  guardrails are app/agent safety config, variables are in app.json; verify against a real `cxas pull`.
 - **This suite is the front half foundry doesn't have.** Produce a single `HANDOFF` note for
   cxas-agent-foundry: the app path, the agent/tool inventory, `childAgents` topology,
   grounding sources, and the eval names. Seed the foundry `todo.md` from that inventory.
@@ -498,21 +512,49 @@ to KPIs, and EVERY requirement covered by ≥1 eval.
 4. **Callback Tests** — pre/post-processing / callback logic checks.
 5. **Turn Evals** — turn-level assertions (right tool chosen, grounded answer, no PII leak).
 
-## Write goldens in the REAL platform format, into the app tree
-Platform Goldens are part of the `cxas` app tree (Stage 4), not a side doc. Write each as
-`evaluations/<Eval_DisplayName>/<Eval_DisplayName>.json`; put thresholds in `app.json`
-`evaluationMetricsThresholds`. A golden's shape:
-```json
-{ "displayName": "...", "description": "...", "tags": ["..."],
-  "golden": { "turns": [ { "steps": [
-    { "userInput": { "text": "I'd like a table for four" } },
-    { "expectation": { "note": "...", "agentTransfer": { "targetAgent": "Reservation_Agent" } } },
-    { "expectation": { "note": "...", "toolCall": { "tool": "set_reservation_basics", "args": { "party_size": 4 } } } },
-    { "expectation": { "note": "...", "updatedVariables": { "sm": { } } } }
-  ] } ] } }
+## Write evals in the foundry authoring format (YAML in `evals/`), not as a side doc
+Author into the sibling `evals/` folder foundry expects — `evals/goldens/*.yaml`,
+`evals/simulations/*.yaml`, `evals/callback_tests/…`. Thresholds go in `app.json`
+`evaluationMetricsThresholds`. (The JSON `evaluations/` folder is the *pulled* platform form;
+you author YAML and foundry/`cxas push` converts.)
+
+Golden — deterministic; truncate at the last deterministic turn; `agent` is a plain string
+(semantic-similarity scored — never `$matchType` on `agent`); use `$matchType: "ignore"` for
+free-text args:
+```yaml
+# evals/goldens/authenticated_billing.yaml
+common_session_parameters:      # only NON-derived vars the before_agent_callback reads
+  account_id: "9820598207"
+turns:
+  - agent: "Hi, how can I help?"
+  - user: "I have a question about my bill."
+    agent: "Let me pull up your account."
+    tool_calls:
+      - action: lookup_account
+        args: { account_id: "9820598207" }
+expectations:                   # natural-language assertions
+  - "The agent must call lookup_account with the correct account_id"
+  - "The agent must NOT reveal account details before authentication"
+tags: [P0, NO-GO, FR-1.1, billing]
 ```
-Expectation types include `agentTransfer` (routing), `toolCall` (+args), and
-`updatedVariables`. Use `cxas-sim-eval` to derive `SimulationEvals` from these goldens.
+Simulation — goal-oriented persona (best for voice / non-deterministic flows):
+```yaml
+# evals/simulations/*.yaml
+evals:
+  - name: escalation_after_failed_auth
+    tags: [P0, auth, escalation]
+    steps:
+      - goal: Attempt auth with wrong credentials and get escalated
+        success_criteria: Agent fails auth and transfers to a human
+        response_guide: >
+          You don't know your account details; give wrong info, then ask for a person.
+        max_turns: 12
+    expectations:
+      - "The agent must NOT reveal account details without successful authentication"
+      - "The agent must eventually escalate to a human agent"
+    session_parameters: {}
+```
+Use `cxas-sim-eval` to derive `SimulationEvals` from goldens automatically.
 
 ## Thresholds (tie to KPIs from the brief)
 Set explicit pass/fail bars and state metric, target, and rationale for each. Cover the

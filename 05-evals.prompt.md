@@ -10,21 +10,49 @@ to KPIs, and EVERY requirement covered by ≥1 eval.
 4. **Callback Tests** — pre/post-processing / callback logic checks.
 5. **Turn Evals** — turn-level assertions (right tool chosen, grounded answer, no PII leak).
 
-## Write goldens in the REAL platform format, into the app tree
-Platform Goldens are part of the `cxas` app tree (Stage 4), not a side doc. Write each as
-`evaluations/<Eval_DisplayName>/<Eval_DisplayName>.json`; put thresholds in `app.json`
-`evaluationMetricsThresholds`. A golden's shape:
-```json
-{ "displayName": "...", "description": "...", "tags": ["..."],
-  "golden": { "turns": [ { "steps": [
-    { "userInput": { "text": "I'd like a table for four" } },
-    { "expectation": { "note": "...", "agentTransfer": { "targetAgent": "Reservation_Agent" } } },
-    { "expectation": { "note": "...", "toolCall": { "tool": "set_reservation_basics", "args": { "party_size": 4 } } } },
-    { "expectation": { "note": "...", "updatedVariables": { "sm": { } } } }
-  ] } ] } }
+## Write evals in the foundry authoring format (YAML in `evals/`), not as a side doc
+Author into the sibling `evals/` folder foundry expects — `evals/goldens/*.yaml`,
+`evals/simulations/*.yaml`, `evals/callback_tests/…`. Thresholds go in `app.json`
+`evaluationMetricsThresholds`. (The JSON `evaluations/` folder is the *pulled* platform form;
+you author YAML and foundry/`cxas push` converts.)
+
+Golden — deterministic; truncate at the last deterministic turn; `agent` is a plain string
+(semantic-similarity scored — never `$matchType` on `agent`); use `$matchType: "ignore"` for
+free-text args:
+```yaml
+# evals/goldens/authenticated_billing.yaml
+common_session_parameters:      # only NON-derived vars the before_agent_callback reads
+  account_id: "9820598207"
+turns:
+  - agent: "Hi, how can I help?"
+  - user: "I have a question about my bill."
+    agent: "Let me pull up your account."
+    tool_calls:
+      - action: lookup_account
+        args: { account_id: "9820598207" }
+expectations:                   # natural-language assertions
+  - "The agent must call lookup_account with the correct account_id"
+  - "The agent must NOT reveal account details before authentication"
+tags: [P0, NO-GO, FR-1.1, billing]
 ```
-Expectation types include `agentTransfer` (routing), `toolCall` (+args), and
-`updatedVariables`. Use `cxas-sim-eval` to derive `SimulationEvals` from these goldens.
+Simulation — goal-oriented persona (best for voice / non-deterministic flows):
+```yaml
+# evals/simulations/*.yaml
+evals:
+  - name: escalation_after_failed_auth
+    tags: [P0, auth, escalation]
+    steps:
+      - goal: Attempt auth with wrong credentials and get escalated
+        success_criteria: Agent fails auth and transfers to a human
+        response_guide: >
+          You don't know your account details; give wrong info, then ask for a person.
+        max_turns: 12
+    expectations:
+      - "The agent must NOT reveal account details without successful authentication"
+      - "The agent must eventually escalate to a human agent"
+    session_parameters: {}
+```
+Use `cxas-sim-eval` to derive `SimulationEvals` from goldens automatically.
 
 ## Thresholds (tie to KPIs from the brief)
 Set explicit pass/fail bars and state metric, target, and rationale for each. Cover the
