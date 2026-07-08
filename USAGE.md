@@ -54,6 +54,10 @@ pip install cxas-scrapi
 gcloud auth application-default login
 python3 scripts/smoke-test.py                    # verify the cxas-scrapi API before a real run
 ```
+After a first `cxas pull`, validate the build produced the real format:
+```bash
+python3 scripts/smoke-test.py --pull-dir cxas_app/<App> --layout-only
+```
 The pipeline now delegates on-platform work to the official skills:
 - **Build / Validate →** `cxas-agent-foundry` (`cxas push`, lint via `lint-fixer`).
 - **Evals →** `cxas-agent-foundry` `run-and-report.py` + `cxas-sim-eval`

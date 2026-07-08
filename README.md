@@ -10,7 +10,7 @@
 > **Fastest start (installable Skill):** `npx skills add srikanthpyaraka/cxas-prompt-pipeline`
 > — then just ask "build a CXAS agent from this PRD" (it auto-triggers), or type **`demo`**.
 > No-install alternative: paste [`dist/cx-agent-builder.system.md`](dist/cx-agent-builder.system.md)
-> into Claude/Gemini, then **`demo`**. See [`QUICKSTART.md`](QUICKSTART.md).
+> into Claude/Gemini, then **`demo`**. See [`USAGE.md`](USAGE.md).
 >
 > **Presenting this?** → [`docs/DEMO-PLAYBOOK.md`](docs/DEMO-PLAYBOOK.md) (install→overview→run) ·
 > [`docs/DEMO-RUNSHEET.md`](docs/DEMO-RUNSHEET.md) (runsheet) ·
@@ -54,7 +54,7 @@ sync.
 | `PROMPT-ASSESSOR.prompt.md` | Standalone skill: scores ANY prompt vs. Anthropic best practices, gives feedback, rewrites, re-scores until good-to-go. |
 | `.agents/skills/cx-agent-builder/` | Installable Agent Skill (auto-triggers). `SKILL.md` + bundled `stages/` + `reference/`, synced by `scripts/build-skill.sh`. |
 | `dist/cx-agent-builder.system.md` | One-file paste bundle (no-install path), built by `scripts/build-bundle.sh`. |
-| `scripts/smoke-test.py` | Verify the installed cxas-scrapi matches the API the prompts assume (run before a real build). |
+| `scripts/smoke-test.py` | Verify the installed cxas-scrapi API **and** (with `--pull-dir`) a real `cxas pull` tree matches the expected JSON layout. |
 | `scripts/build-report.py` | Turn a run's captured markdown artifacts into a single `DELIVERABLE.md` + styled `DELIVERABLE.html`. |
 | `docs/USING-CXAS-SKILLS.md` | How to install/use the 5 official cxas-scrapi skills and how this package maps to them. |
 | `docs/REVIEW.md` | Independent reviewer's assessment of the package (strengths, risks, verdict). |

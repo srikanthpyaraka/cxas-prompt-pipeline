@@ -69,7 +69,7 @@ Pick ONE path:
 - **Say the honest caveats** (builds trust): examples are authored reference runs; pin the
   scrapi API to your installed version; it hasn't been run against a live project yet. (Full
   list: `docs/REVIEW.md`.)
-- Leave-behind: repo link + `QUICKSTART.md`.
+- Leave-behind: repo link + `USAGE.md`.
 
 ## If you want the audience to install it themselves
 The repo is currently **private**, so `npx skills add …` won't resolve for them. Either add
