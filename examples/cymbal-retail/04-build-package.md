@@ -41,15 +41,20 @@ cxas_app/CymbalRetail/
   tools/end_session/end_session.json                  # system tool                                            [R10]
 (eval authoring is a SIBLING of cxas_app/: <project>/evals/goldens/*.yaml + simulations/*.yaml — Stage 5)
 ```
-Notes on the real format: guardrails (prompt guard / blocklist / safety outcomes) are app/agent
-safety config, not a `guardrails/` folder; variables are in `app.json.variableDeclarations`,
-not a `variables/` folder; sub-agents are the root agent's `childAgents`.
+Notes on the real format: guardrails (prompt guard / blocklist / safety outcomes) go in a
+`guardrails/` folder in the app-dir (`cxas push` uploads `guardrails/` + `toolsets/`);
+variables are in `app.json.variableDeclarations` (no `variables/` folder); sub-agents are the
+root agent's `childAgents`.
 
-Push:
+Create the app, push, then push evals (this order fixes "no such app"):
 ```bash
 export PID=cymbal-cx-demo LOC=global
-cxas push --app-dir cxas_app/CymbalRetail --to projects/$PID/locations/$LOC/apps/$APP_ID \
+cxas create "Cymbal Home & Garden" --project-id $PID --location $LOC   # new empty app
+cxas apps list --project-id $PID --location $LOC                       # capture its resource id
+cxas push --app-dir cxbuild/cymbal/cxas_app/CymbalRetail --to "Cymbal Home & Garden" \
   --project-id $PID --location $LOC
+cxas push-eval --app-name projects/$PID/locations/$LOC/apps/<id> \
+  --file cxbuild/cymbal/evals/goldens/PG-01.yaml
 # then lint via cxas-agent-foundry's lint-fixer sub-agent (don't run cxas lint on the main thread)
 ```
 ```

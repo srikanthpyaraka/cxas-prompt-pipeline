@@ -36,15 +36,19 @@ cxas_app/OrderBot/
   tools/search_kb/search_kb.json                  # dataStoreTool (grounding) [R3]
 (eval authoring is a SIBLING of cxas_app/: <project>/evals/goldens/*.yaml + simulations/*.yaml — Stage 5)
 ```
-Real-format notes: guardrails (PII redaction / PCI block / off-topic refusal) are app/agent
-safety config — Cloud DLP for redaction — not a `guardrails/` folder; sub-agents are the
+Real-format notes: guardrails (PII redaction / PCI block / off-topic refusal) go in a
+`guardrails/` folder in the app-dir (Cloud DLP for redaction); sub-agents are the
 router's `childAgents`; variables live in `app.json.variableDeclarations`.
 
-Push:
+Create the app, push, then push evals (this order fixes "no such app"):
 ```bash
 export PID=acme-cx-prod LOC=global
-cxas push --app-dir cxas_app/OrderBot --to projects/$PID/locations/$LOC/apps/$APP_ID \
+cxas create "OrderBot" --project-id $PID --location $LOC        # new empty app
+cxas apps list --project-id $PID --location $LOC               # capture its resource id
+cxas push --app-dir cxbuild/orderbot/cxas_app/OrderBot --to "OrderBot" \
   --project-id $PID --location $LOC
+cxas push-eval --app-name projects/$PID/locations/$LOC/apps/<id> \
+  --file cxbuild/orderbot/evals/goldens/PG-01.yaml
 # then lint via cxas-agent-foundry's lint-fixer sub-agent (don't run cxas lint on the main thread)
 ```
 ```

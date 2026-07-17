@@ -43,23 +43,33 @@ it forward verbatim:
 <structured content: markdown tables + JSON/YAML where a schema is defined>
 ```
 
-## Persist every artifact to disk (not just chat)
-Chat scrolls away; a project needs durable, reviewable output. For each stage, **write the
-artifact to a markdown file** in the run's working directory, in addition to showing it in
-chat. Use a stable layout and filenames (mirrors the `examples/` folders):
+## WRITE files to disk — do not just print them in chat (mandatory)
+This is the #1 failure mode: the model *narrates* file contents in the transcript but never
+creates them, so there's no app and no eval files on disk. **You MUST create every file on
+disk using your file-writing tool, at its exact path.** Printing a tree or a file's contents
+in chat is NOT the same as writing it and does not count as done.
+
+Rules:
+- For **each** config/eval file (`app.json`, every `agents/<a>/<a>.json`, every
+  `instruction.txt`, every `tools/<t>/<t>.json`, every callback `python_code.py`, every
+  `evals/**/*.yaml`), issue a real write. One file = one write.
+- **Verify before claiming done:** after writing, list the tree (`find cxbuild -type f` or
+  `ls -R`) and confirm every expected file exists. Report the file count. If a file isn't on
+  disk, it wasn't created — go back and write it.
+- If the environment truly has no file-writing tool, say so explicitly and stop — do not
+  pretend the build succeeded.
+
+Run working-directory layout:
 ```
 cxbuild/<app-slug>/
-  artifacts/
-    00-prd.md            01-normalized-brief.md   02-interview.md
-    03-architecture.md   03-traceability.md       04-build-package.md
-    05-eval-suite.md     06-deliverable.md        07-bugfix-<n>.md
-  PROJECT_STATE.json     artifacts/README.md   (index: stage · file · status)
-  cxas_app/<AppName>/    (the pushable config tree from Stage 4)
+  gecx-config.json                 (GCP project_id, location, app display name/id)
+  artifacts/                       (00-prd.md … 07-bugfix-<n>.md — the stage records, markdown)
+  PROJECT_STATE.json
+  cxas_app/<AppName>/              (the pushable app tree from Stage 4 — JSON)
+  evals/                           (goldens/ simulations/ callback_tests/ — YAML, from Stage 5)
 ```
-Keep files as clean markdown (headings, tables, fenced code) so they render well and can be
-diffed in git. At Stage 6, assemble a single consolidated **`DELIVERABLE.md`**; a styled
-**`DELIVERABLE.html`** can be generated from the artifacts with `scripts/build-report.py`.
-If you cannot write files in the current environment, say so and keep emitting to chat.
+Keep the stage *records* in `artifacts/` as clean markdown. At Stage 6 assemble a
+consolidated **`DELIVERABLE.md`** (styled **`DELIVERABLE.html`** via `scripts/build-report.py`).
 
 ## Requirement record schema (used from Stage 1 on)
 ```json

@@ -43,15 +43,24 @@ the **cxas-scrapi** Python framework. Treat the following as authoritative.
   gemini-3.1-flash-live), `instruction` (path), `tools` (tool displayNames), `childAgents`
   (sub-agent displayNames), and `before/after Model|Tool|Agent Callbacks`. **Variables** are
   declared in `app.json` `variableDeclarations`; `app.json` also holds `rootAgent`,
-  `evaluationMetricsThresholds`, `loggingSettings`, `timeZoneSettings`. Not YAML; no
-  top-level `guardrails/` or `examples/` folders — verify layout against a real `cxas pull`.
+  `evaluationMetricsThresholds`, `loggingSettings`, `timeZoneSettings`.
+- **What `cxas push` uploads from the app-dir** (per the CLI): `app.json` (or `app.yaml`),
+  `global_instruction.txt`, `environment.json`, and folders `agents/`, `tools/`, `toolsets/`,
+  `guardrails/`, `evaluations/`, `evaluationDatasets/`, `evaluationExpectations/`. So
+  **`guardrails/` and `toolsets/` ARE valid app-dir folders** (earlier "no guardrails folder"
+  was wrong); variables stay in `app.json.variableDeclarations` (no `variables/` folder).
 - **Foundry project layout (the handoff target).** cxas-agent-foundry works in a project dir:
-  the pushable app at `cxas_app/<App>/` (the JSON tree above) **plus** a sibling `evals/`
-  folder for eval *authoring* in **YAML** — `evals/goldens/*.yaml`, `evals/simulations/*.yaml`,
-  `evals/callback_tests/…`. Author evals as YAML (goldens = deterministic turns with
-  `tool_calls`/`expectations`/`tags`; simulations = goal/`response_guide` personas). The JSON
-  `evaluations/` form is only the *pulled* platform representation. Model IDs seen in the wild:
-  `gemini-2.5-flash`, `gemini-3-flash`.
+  `gecx-config.json` (GCP project/location/app), the pushable app at `cxas_app/<App>/` (JSON),
+  and a sibling `evals/` folder for eval *authoring* in **YAML** (`evals/goldens/*.yaml`,
+  `evals/simulations/*.yaml`, `evals/callback_tests/…`). `cxas init` scaffolds the skill files.
+- **Create & push (this is where "no such app" comes from):**
+  1. `cxas create "<Display Name>" --project-id <pid> --location <loc>` — new empty app.
+  2. `cxas apps list --project-id <pid> --location <loc>` — get its full resource name.
+  3. `cxas push --app-dir <dir> --to "<Display Name>" --project-id <pid> --location <loc>`
+     (push can also create a new app if `--to` is omitted; then find the id via `apps list`).
+  4. `cxas push-eval --app-name <full-resource> --file <evals.yaml>` — sync golden evals.
+  `cxas push --to <id>` on an app that was never created **fails** — always create/verify first.
+  Model IDs seen in the wild: `gemini-2.5-flash`, `gemini-3-flash`.
 - `cxas lint` — validates configs against **60+ best-practice rules**.
 - Auth: Application Default Credentials (`gcloud auth application-default login`),
   environment credentials on Cloud Run/Functions, or an explicit `creds_path`.

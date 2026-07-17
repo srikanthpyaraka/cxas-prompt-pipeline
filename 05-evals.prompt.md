@@ -83,6 +83,19 @@ tests the voice *path* (TTS/STT + audio callbacks), not real acoustic robustness
 accents, human-ASR error). Semantic assertion matters even more here (phrasing varies more
 in voice). Cover DTMF / no-input / no-match / barge-in paths as their own simulation cases.
 
+## ⚠ WRITE the eval files to disk, then push them (do not leave them in chat)
+A tester reported "eval format was correct but no evaluation files exist — only in the logs."
+That means the YAML was printed, never written. So:
+1. **Write each eval** with your file tool: `cxbuild/<app>/evals/goldens/<name>.yaml`,
+   `.../simulations/<name>.yaml`, `.../callback_tests/…`. Then verify:
+   `find cxbuild/<app>/evals -type f`.
+2. **Push them to the app** (the app must already exist from Stage 4):
+   ```bash
+   cxas push-eval --app-name projects/<pid>/locations/<loc>/apps/<id> \
+     --file cxbuild/<app>/evals/goldens/<name>.yaml
+   ```
+   (Goldens can also travel as `evaluations/` JSON inside the app-dir uploaded by `cxas push`.)
+
 ## Dual-emit run instructions (delegate to skills)
 - **Console:** where/how to run goldens & simulations in the CX Agent Studio UI.
 - **Config-as-code (prefer official skills):**

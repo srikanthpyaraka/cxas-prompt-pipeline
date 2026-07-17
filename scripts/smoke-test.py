@@ -73,9 +73,10 @@ def check_api():
 
 # ---- expected cxas pull/push tree layout (verified against bella_notte) ----
 TOOL_TYPE_KEYS = ("pythonFunction", "openApiTool", "dataStoreTool")
-# Inside the app dir these folders indicate the wrong format (guardrails=safety config,
-# variables=app.json, callbacks live under agents/<a>/..._callbacks/).
-UNEXPECTED_DIRS = ("guardrails", "variables", "callbacks")
+# Inside the app dir these folders indicate the wrong format (variables belong in app.json;
+# top-level callbacks belong under agents/<a>/..._callbacks/). Note: guardrails/ and toolsets/
+# ARE valid app-dir folders (cxas push uploads them).
+UNEXPECTED_DIRS = ("variables", "callbacks")
 
 def _json(path):
     try:

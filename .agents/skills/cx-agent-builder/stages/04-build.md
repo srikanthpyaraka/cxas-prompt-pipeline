@@ -34,29 +34,39 @@ Key rules that people get wrong:
 - **Evals authoring lives in the sibling `evals/` folder as YAML** (Stage 5). The JSON
   `evaluations/` + `evaluationExpectations/` folders are the *pulled* platform form; thresholds
   live in app.json `evaluationMetricsThresholds`.
-- There is **no top-level `guardrails/`, `examples/`, or `variables/` folder inside the app** —
-  guardrails are app/agent safety config, variables are in app.json; verify against a real `cxas pull`.
-- **This suite is the front half foundry doesn't have.** Produce a single `HANDOFF` note for
-  cxas-agent-foundry: the app path, the agent/tool inventory, `childAgents` topology,
-  grounding sources, and the eval names. Seed the foundry `todo.md` from that inventory.
-- If a real `cxas pull` of a comparable app is available, diff your tree against it before pushing.
+- **`cxas push` uploads these from the app-dir:** `app.json`, `global_instruction.txt`,
+  `environment.json`, and folders `agents/`, `tools/`, `toolsets/`, `guardrails/`,
+  `evaluations/`, `evaluationDatasets/`, `evaluationExpectations/`. So **`guardrails/` and
+  `toolsets/` ARE valid folders** — put guardrail configs under `guardrails/`. Variables stay
+  in `app.json.variableDeclarations` (no `variables/` folder).
+- Also write **`gecx-config.json`** at the run root (GCP project_id, location, app display
+  name/id) and a `HANDOFF` note (app path, agent/tool inventory, `childAgents` topology,
+  grounding sources, eval names). Seed the foundry `todo.md` from that inventory.
+
+## ⚠ You must WRITE every file to disk, then create the app — narration is not a build
+Printing the tree in chat is NOT building. Two failures reported by testers you MUST avoid:
+"eval/config files only in the logs, not on disk" and "no such app exists." So:
+
+1. **Write every file** with your file tool (per the output contract), then verify:
+   `find cxbuild/<app>/cxas_app -type f` — confirm app.json + every agent/tool/instruction/callback exists.
+2. **Create the app on-platform BEFORE pushing** (this is what fixes "no such app"):
+   ```bash
+   cxas create "<App Display Name>" --project-id <pid> --location <loc>
+   cxas apps list --project-id <pid> --location <loc>        # confirm it exists; capture the resource name
+   ```
+3. **Push the written tree**, then push evals (Stage 5 files):
+   ```bash
+   cxas push --app-dir cxbuild/<app>/cxas_app/<App> --to "<App Display Name>" \
+     --project-id <pid> --location <loc>
+   cxas push-eval --app-name projects/<pid>/locations/<loc>/apps/<id> --file cxbuild/<app>/evals/goldens/<file>.yaml
+   ```
+4. Lint via cxas-agent-foundry's **`lint-fixer` sub-agent** (don't run `cxas lint` on the main
+   thread). Honor the foundry `todo.md` checklist. Prefer the foundry skill over raw scrapi Python.
 
 ## Part A — CONSOLE RUNBOOK
 Numbered CX Agent Studio UI steps to create, in order: the App → each Agent (goal,
 instructions, tools attach, examples) → each Tool → each Guardrail → attach fallbacks &
 handoff → save/version. Note where a human must supply secrets/auth.
-
-## Part B — CONFIG-AS-CODE (delegate to cxas-agent-foundry)
-Prefer the official **cxas-agent-foundry** skill over hand-written code. Emit:
-1. **The JSON app tree above** for `cxas pull`/`push` — each resource's JSON + its
-   `instruction.txt` / `python_code.py` files, fully populated from the design.
-2. **Foundry runbook** (this is the code path):
-   - `python .agents/skills/cxas-agent-foundry/scripts/inspect-app.py` to check current state.
-   - `cxas push --app-dir <project>/cxas_app/<AppName> --to projects/<pid>/locations/<loc>/apps/<app_id> --project-id <pid> --location <loc>`
-   - Lint via the skill's **`lint-fixer` sub-agent** (do not run `cxas lint` on the main
-     thread — its output is verbose); push only after lint returns clean.
-   Only drop to raw `Apps/Agents/Tools/Guardrails` Python where no skill path covers the step.
-3. Note the foundry skill enforces a `todo.md` checklist first — honor it.
 
 ## Cross-checks
 - Every resource cites the `Rn`(s) it satisfies.

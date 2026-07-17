@@ -48,15 +48,24 @@ the **cxas-scrapi** Python framework. Treat the following as authoritative.
   gemini-3.1-flash-live), `instruction` (path), `tools` (tool displayNames), `childAgents`
   (sub-agent displayNames), and `before/after Model|Tool|Agent Callbacks`. **Variables** are
   declared in `app.json` `variableDeclarations`; `app.json` also holds `rootAgent`,
-  `evaluationMetricsThresholds`, `loggingSettings`, `timeZoneSettings`. Not YAML; no
-  top-level `guardrails/` or `examples/` folders — verify layout against a real `cxas pull`.
+  `evaluationMetricsThresholds`, `loggingSettings`, `timeZoneSettings`.
+- **What `cxas push` uploads from the app-dir** (per the CLI): `app.json` (or `app.yaml`),
+  `global_instruction.txt`, `environment.json`, and folders `agents/`, `tools/`, `toolsets/`,
+  `guardrails/`, `evaluations/`, `evaluationDatasets/`, `evaluationExpectations/`. So
+  **`guardrails/` and `toolsets/` ARE valid app-dir folders** (earlier "no guardrails folder"
+  was wrong); variables stay in `app.json.variableDeclarations` (no `variables/` folder).
 - **Foundry project layout (the handoff target).** cxas-agent-foundry works in a project dir:
-  the pushable app at `cxas_app/<App>/` (the JSON tree above) **plus** a sibling `evals/`
-  folder for eval *authoring* in **YAML** — `evals/goldens/*.yaml`, `evals/simulations/*.yaml`,
-  `evals/callback_tests/…`. Author evals as YAML (goldens = deterministic turns with
-  `tool_calls`/`expectations`/`tags`; simulations = goal/`response_guide` personas). The JSON
-  `evaluations/` form is only the *pulled* platform representation. Model IDs seen in the wild:
-  `gemini-2.5-flash`, `gemini-3-flash`.
+  `gecx-config.json` (GCP project/location/app), the pushable app at `cxas_app/<App>/` (JSON),
+  and a sibling `evals/` folder for eval *authoring* in **YAML** (`evals/goldens/*.yaml`,
+  `evals/simulations/*.yaml`, `evals/callback_tests/…`). `cxas init` scaffolds the skill files.
+- **Create & push (this is where "no such app" comes from):**
+  1. `cxas create "<Display Name>" --project-id <pid> --location <loc>` — new empty app.
+  2. `cxas apps list --project-id <pid> --location <loc>` — get its full resource name.
+  3. `cxas push --app-dir <dir> --to "<Display Name>" --project-id <pid> --location <loc>`
+     (push can also create a new app if `--to` is omitted; then find the id via `apps list`).
+  4. `cxas push-eval --app-name <full-resource> --file <evals.yaml>` — sync golden evals.
+  `cxas push --to <id>` on an app that was never created **fails** — always create/verify first.
+  Model IDs seen in the wild: `gemini-2.5-flash`, `gemini-3-flash`.
 - `cxas lint` — validates configs against **60+ best-practice rules**.
 - Auth: Application Default Credentials (`gcloud auth application-default login`),
   environment credentials on Cloud Run/Functions, or an explicit `creds_path`.
@@ -139,23 +148,33 @@ it forward verbatim:
 <structured content: markdown tables + JSON/YAML where a schema is defined>
 ```
 
-## Persist every artifact to disk (not just chat)
-Chat scrolls away; a project needs durable, reviewable output. For each stage, **write the
-artifact to a markdown file** in the run's working directory, in addition to showing it in
-chat. Use a stable layout and filenames (mirrors the `examples/` folders):
+## WRITE files to disk — do not just print them in chat (mandatory)
+This is the #1 failure mode: the model *narrates* file contents in the transcript but never
+creates them, so there's no app and no eval files on disk. **You MUST create every file on
+disk using your file-writing tool, at its exact path.** Printing a tree or a file's contents
+in chat is NOT the same as writing it and does not count as done.
+
+Rules:
+- For **each** config/eval file (`app.json`, every `agents/<a>/<a>.json`, every
+  `instruction.txt`, every `tools/<t>/<t>.json`, every callback `python_code.py`, every
+  `evals/**/*.yaml`), issue a real write. One file = one write.
+- **Verify before claiming done:** after writing, list the tree (`find cxbuild -type f` or
+  `ls -R`) and confirm every expected file exists. Report the file count. If a file isn't on
+  disk, it wasn't created — go back and write it.
+- If the environment truly has no file-writing tool, say so explicitly and stop — do not
+  pretend the build succeeded.
+
+Run working-directory layout:
 ```
 cxbuild/<app-slug>/
-  artifacts/
-    00-prd.md            01-normalized-brief.md   02-interview.md
-    03-architecture.md   03-traceability.md       04-build-package.md
-    05-eval-suite.md     06-deliverable.md        07-bugfix-<n>.md
-  PROJECT_STATE.json     artifacts/README.md   (index: stage · file · status)
-  cxas_app/<AppName>/    (the pushable config tree from Stage 4)
+  gecx-config.json                 (GCP project_id, location, app display name/id)
+  artifacts/                       (00-prd.md … 07-bugfix-<n>.md — the stage records, markdown)
+  PROJECT_STATE.json
+  cxas_app/<AppName>/              (the pushable app tree from Stage 4 — JSON)
+  evals/                           (goldens/ simulations/ callback_tests/ — YAML, from Stage 5)
 ```
-Keep files as clean markdown (headings, tables, fenced code) so they render well and can be
-diffed in git. At Stage 6, assemble a single consolidated **`DELIVERABLE.md`**; a styled
-**`DELIVERABLE.html`** can be generated from the artifacts with `scripts/build-report.py`.
-If you cannot write files in the current environment, say so and keep emitting to chat.
+Keep the stage *records* in `artifacts/` as clean markdown. At Stage 6 assemble a
+consolidated **`DELIVERABLE.md`** (styled **`DELIVERABLE.html`** via `scripts/build-report.py`).
 
 ## Requirement record schema (used from Stage 1 on)
 ```json
@@ -437,29 +456,39 @@ Key rules that people get wrong:
 - **Evals authoring lives in the sibling `evals/` folder as YAML** (Stage 5). The JSON
   `evaluations/` + `evaluationExpectations/` folders are the *pulled* platform form; thresholds
   live in app.json `evaluationMetricsThresholds`.
-- There is **no top-level `guardrails/`, `examples/`, or `variables/` folder inside the app** —
-  guardrails are app/agent safety config, variables are in app.json; verify against a real `cxas pull`.
-- **This suite is the front half foundry doesn't have.** Produce a single `HANDOFF` note for
-  cxas-agent-foundry: the app path, the agent/tool inventory, `childAgents` topology,
-  grounding sources, and the eval names. Seed the foundry `todo.md` from that inventory.
-- If a real `cxas pull` of a comparable app is available, diff your tree against it before pushing.
+- **`cxas push` uploads these from the app-dir:** `app.json`, `global_instruction.txt`,
+  `environment.json`, and folders `agents/`, `tools/`, `toolsets/`, `guardrails/`,
+  `evaluations/`, `evaluationDatasets/`, `evaluationExpectations/`. So **`guardrails/` and
+  `toolsets/` ARE valid folders** — put guardrail configs under `guardrails/`. Variables stay
+  in `app.json.variableDeclarations` (no `variables/` folder).
+- Also write **`gecx-config.json`** at the run root (GCP project_id, location, app display
+  name/id) and a `HANDOFF` note (app path, agent/tool inventory, `childAgents` topology,
+  grounding sources, eval names). Seed the foundry `todo.md` from that inventory.
+
+## ⚠ You must WRITE every file to disk, then create the app — narration is not a build
+Printing the tree in chat is NOT building. Two failures reported by testers you MUST avoid:
+"eval/config files only in the logs, not on disk" and "no such app exists." So:
+
+1. **Write every file** with your file tool (per the output contract), then verify:
+   `find cxbuild/<app>/cxas_app -type f` — confirm app.json + every agent/tool/instruction/callback exists.
+2. **Create the app on-platform BEFORE pushing** (this is what fixes "no such app"):
+   ```bash
+   cxas create "<App Display Name>" --project-id <pid> --location <loc>
+   cxas apps list --project-id <pid> --location <loc>        # confirm it exists; capture the resource name
+   ```
+3. **Push the written tree**, then push evals (Stage 5 files):
+   ```bash
+   cxas push --app-dir cxbuild/<app>/cxas_app/<App> --to "<App Display Name>" \
+     --project-id <pid> --location <loc>
+   cxas push-eval --app-name projects/<pid>/locations/<loc>/apps/<id> --file cxbuild/<app>/evals/goldens/<file>.yaml
+   ```
+4. Lint via cxas-agent-foundry's **`lint-fixer` sub-agent** (don't run `cxas lint` on the main
+   thread). Honor the foundry `todo.md` checklist. Prefer the foundry skill over raw scrapi Python.
 
 ## Part A — CONSOLE RUNBOOK
 Numbered CX Agent Studio UI steps to create, in order: the App → each Agent (goal,
 instructions, tools attach, examples) → each Tool → each Guardrail → attach fallbacks &
 handoff → save/version. Note where a human must supply secrets/auth.
-
-## Part B — CONFIG-AS-CODE (delegate to cxas-agent-foundry)
-Prefer the official **cxas-agent-foundry** skill over hand-written code. Emit:
-1. **The JSON app tree above** for `cxas pull`/`push` — each resource's JSON + its
-   `instruction.txt` / `python_code.py` files, fully populated from the design.
-2. **Foundry runbook** (this is the code path):
-   - `python .agents/skills/cxas-agent-foundry/scripts/inspect-app.py` to check current state.
-   - `cxas push --app-dir <project>/cxas_app/<AppName> --to projects/<pid>/locations/<loc>/apps/<app_id> --project-id <pid> --location <loc>`
-   - Lint via the skill's **`lint-fixer` sub-agent** (do not run `cxas lint` on the main
-     thread — its output is verbose); push only after lint returns clean.
-   Only drop to raw `Apps/Agents/Tools/Guardrails` Python where no skill path covers the step.
-3. Note the foundry skill enforces a `todo.md` checklist first — honor it.
 
 ## Cross-checks
 - Every resource cites the `Rn`(s) it satisfies.
@@ -585,6 +614,19 @@ tests the voice *path* (TTS/STT + audio callbacks), not real acoustic robustness
 accents, human-ASR error). Semantic assertion matters even more here (phrasing varies more
 in voice). Cover DTMF / no-input / no-match / barge-in paths as their own simulation cases.
 
+## ⚠ WRITE the eval files to disk, then push them (do not leave them in chat)
+A tester reported "eval format was correct but no evaluation files exist — only in the logs."
+That means the YAML was printed, never written. So:
+1. **Write each eval** with your file tool: `cxbuild/<app>/evals/goldens/<name>.yaml`,
+   `.../simulations/<name>.yaml`, `.../callback_tests/…`. Then verify:
+   `find cxbuild/<app>/evals -type f`.
+2. **Push them to the app** (the app must already exist from Stage 4):
+   ```bash
+   cxas push-eval --app-name projects/<pid>/locations/<loc>/apps/<id> \
+     --file cxbuild/<app>/evals/goldens/<name>.yaml
+   ```
+   (Goldens can also travel as `evaluations/` JSON inside the app-dir uploaded by `cxas push`.)
+
 ## Dual-emit run instructions (delegate to skills)
 - **Console:** where/how to run goldens & simulations in the CX Agent Studio UI.
 - **Config-as-code (prefer official skills):**
@@ -649,10 +691,20 @@ user actions. **Blockers must be 0 to pass the gate.**
 5. Deploy runbook + monitoring/KPI dashboard plan + iteration loop (how feedback →
    new goldens/examples → re-eval → redeploy)
 
+## Verify it's REAL before sign-off (not just narrated)
+Before claiming ship-ready, prove the build actually exists — this is where testers got
+burned ("no such app", "eval files only in logs"):
+- **Files on disk:** `find cxbuild/<app> -type f` shows app.json + every agent/tool/instruction
+  /callback + every `evals/**/*.yaml`. Report the count.
+- **App on-platform:** `cxas apps list --project-id <pid> --location <loc>` shows the app by
+  display name with a resource id. If it's absent, the app was never created — go create/push it.
+- **Evals on-platform:** confirm `cxas push-eval` succeeded for the goldens.
+- **Layout sanity:** `python3 scripts/smoke-test.py --pull-dir cxbuild/<app>/cxas_app/<App> --layout-only`.
+
 ## Gate & sign-off
 Present a final summary: requirements covered, open assumptions, lint blockers = 0,
-eval coverage %. Ask the user to confirm sign-off. Only then state
-`GATE: validate PASSED — SHIP-READY`.
+eval coverage %, **files-on-disk count, and the app's resource id from `cxas apps list`**.
+Ask the user to confirm sign-off. Only then state `GATE: validate PASSED — SHIP-READY`.
 
 ## Example (lint-finding shape)
 <example>

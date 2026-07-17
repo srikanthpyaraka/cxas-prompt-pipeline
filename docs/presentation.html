@@ -112,7 +112,7 @@
   <b>evals/</b>                            <i># eval AUTHORING — YAML (Stage 5)</i>
     goldens/*.yaml  simulations/*.yaml  callback_tests/…
       </div>
-      <p class="lead" style="margin-top:14px;font-size:14px">Sub-agents = <code>childAgents</code>. Variables live in <code>app.json</code>. Guardrails = safety config (no folder). Verify a real build with <code>scripts/smoke-test.py --pull-dir cxas_app/&lt;App&gt;</code>.</p>
+      <p class="lead" style="margin-top:14px;font-size:14px">Sub-agents = <code>childAgents</code>. Variables live in <code>app.json</code>. <code>guardrails/</code> + <code>toolsets/</code> are valid folders. To deploy: <code>cxas create</code> → <code>apps list</code> → <code>push</code> → <code>push-eval</code>. Verify with <code>smoke-test.py --pull-dir cxas_app/&lt;App&gt;</code>.</p>
     </section>
 
     <!-- USE IT -->

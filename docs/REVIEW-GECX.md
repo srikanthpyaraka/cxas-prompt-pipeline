@@ -42,6 +42,22 @@ Verified specific claims against the repo (bella_notte pull + the cxas-agent-fou
 cxas-agent-foundry project template, so what testers generate lines up with what the
 official skill expects. The gating risk remains the same single item below.
 
+## Round 3 — real tester feedback (fixes applied)
+Tester ran it and reported: *"eval format correct, but no evaluation files created in app code
+— only in cmd logs; and no such app name exists."* Root causes + fixes, verified against the
+`cxas` CLI docs (`create`, `push`, `push-eval`, `apps`):
+
+| # | Root cause | Fix |
+|---|-----------|-----|
+| R3-1 | **Files narrated, not written.** Prompts printed the tree/evals in chat but never wrote them to disk. | `output-contract` + Stages 4/5 now **mandate writing every file with the file tool** and **verifying with `find … -type f`**; "narration is not a build." |
+| R3-2 | **"No such app exists."** Pipeline pushed with `--to <app_id>` but never *created* the app. | Stage 4 now runs `cxas create "<name>"` → `cxas apps list` (capture id) → `cxas push --to "<name>"` → `cxas push-eval --file <yaml>`. Ground-truth documents the sequence. |
+| R3-3 | **Guardrails format wrong (my error).** I'd claimed "no `guardrails/` folder." | `cxas push` uploads `guardrails/` + `toolsets/` — corrected in ground-truth, Build, both examples, the presentation, and the smoke test (no longer warns on `guardrails/`). |
+| R3-4 | **No ship verification.** | Stage 6 now proves it's real before sign-off: files-on-disk count, `cxas apps list` shows the app, `push-eval` succeeded, and the layout smoke test. |
+
+**Round-3 verdict:** the build now actually materializes files on disk and creates/pushes a
+real app + evals. This directly addresses the tester's two failures. Still requires a live
+run to confirm end-to-end on their project.
+
 ## Still-open smaller items (backlog)
 - Vertical question banks for the interview (retail/telco/airline/banking) so it asks the
   5 questions that matter, faster.

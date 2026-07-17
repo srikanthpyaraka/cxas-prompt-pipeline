@@ -36,6 +36,11 @@ python3 scripts/smoke-test.py            # verifies the cxas-scrapi API matches 
   ```
 - If you have a comparable existing app, `cxas pull` it and run the same `--pull-dir` check
   against the real thing — mismatches there are gold.
+- **Sanity checks the pipeline should pass** (report a bug if not):
+  - Files exist on disk: `find cxbuild -type f` shows app.json + agent/tool/instruction/eval files
+    (not just printed in chat).
+  - The app was created: it appears in `cxas apps list` (the pipeline runs `cxas create` →
+    `push` → `push-eval`). "No such app" means the create step didn't run.
 
 ## 3. Report these 4 things (copy/paste and fill in)
 ```

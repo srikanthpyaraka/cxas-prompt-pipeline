@@ -25,10 +25,20 @@ user actions. **Blockers must be 0 to pass the gate.**
 5. Deploy runbook + monitoring/KPI dashboard plan + iteration loop (how feedback →
    new goldens/examples → re-eval → redeploy)
 
+## Verify it's REAL before sign-off (not just narrated)
+Before claiming ship-ready, prove the build actually exists — this is where testers got
+burned ("no such app", "eval files only in logs"):
+- **Files on disk:** `find cxbuild/<app> -type f` shows app.json + every agent/tool/instruction
+  /callback + every `evals/**/*.yaml`. Report the count.
+- **App on-platform:** `cxas apps list --project-id <pid> --location <loc>` shows the app by
+  display name with a resource id. If it's absent, the app was never created — go create/push it.
+- **Evals on-platform:** confirm `cxas push-eval` succeeded for the goldens.
+- **Layout sanity:** `python3 scripts/smoke-test.py --pull-dir cxbuild/<app>/cxas_app/<App> --layout-only`.
+
 ## Gate & sign-off
 Present a final summary: requirements covered, open assumptions, lint blockers = 0,
-eval coverage %. Ask the user to confirm sign-off. Only then state
-`GATE: validate PASSED — SHIP-READY`.
+eval coverage %, **files-on-disk count, and the app's resource id from `cxas apps list`**.
+Ask the user to confirm sign-off. Only then state `GATE: validate PASSED — SHIP-READY`.
 
 ## Example (lint-finding shape)
 <example>
