@@ -471,6 +471,8 @@ Printing the tree in chat is NOT building. Two failures reported by testers you 
 
 1. **Write every file** with your file tool (per the output contract), then verify:
    `find cxbuild/<app>/cxas_app -type f` — confirm app.json + every agent/tool/instruction/callback exists.
+   *Deterministic option:* emit a `spec.json` (app/agents/tools/guardrails/goldens) and run
+   `python3 scripts/scaffold-app.py spec.json` — it writes the correct tree for you.
 2. **Create the app on-platform BEFORE pushing** (this is what fixes "no such app"):
    ```bash
    cxas create "<App Display Name>" --project-id <pid> --location <loc>
