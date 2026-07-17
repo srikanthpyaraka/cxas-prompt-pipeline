@@ -40,10 +40,10 @@ Checked each example against the prompts' output contract and per-stage requirem
    contracts and are QA'd, but were not produced by executing the orchestrator. Labeled as
    such in each example README. *Recommendation:* capture one genuine live run before a
    public launch.
-2. **cxas-scrapi API surface is approximate.** Method names like `create_or_update(...)` and
-   the `Variables`/`Guardrails` module usage follow the documented shape but should be
-   pinned against the installed version — the scrapi API may differ. *Recommendation:* add a
-   smoke-test script that imports the real package and validates the calls.
+2. **cxas-scrapi API surface — now verified.** `scripts/smoke-test.py` was run against an
+   installed `cxas_scrapi`: all 7 resource classes, the 4 evals classes, and the `cxas` CLI
+   subcommands are present. The invented `create_or_update` was corrected to the real
+   `create_<resource>`/`update_<resource>` methods. Re-run the smoke test to pin any version.
 3. **Platform facts have a shelf life.** "One sample agent (Cymbal), as of Nov 2025" and the
    eval taxonomy names will drift. *Recommendation:* date-stamp `shared/ground-truth.md` and
    re-verify per release.

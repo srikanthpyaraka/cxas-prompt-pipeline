@@ -21,11 +21,12 @@ def add(s, m): results.append((s, m)); print(f"  {s}  {m}")
 
 # ---- expected API surface (name -> [(method, "documented"|"assumed")]) ----
 EXPECTED = {
-    "Apps":        [("list_apps", "documented"), ("create_or_update", "assumed")],
-    "Agents":      [("get_agents_map", "documented"), ("create_or_update", "assumed")],
-    "Tools":       [("get_tools_map", "documented"), ("create_or_update", "assumed")],
-    "Guardrails":  [("create_or_update", "assumed")],
-    "Deployments": [], "Sessions": [], "Variables": [("create_or_update", "assumed")],
+    # method names verified against an installed cxas_scrapi (create_<resource>/update_<resource>)
+    "Apps":        [("list_apps", "documented"), ("create_app", "documented"), ("update_app", "documented"), ("import_app", "documented")],
+    "Agents":      [("get_agents_map", "documented"), ("create_agent", "documented"), ("update_agent", "documented")],
+    "Tools":       [("get_tools_map", "documented"), ("create_tool", "documented"), ("update_tool", "documented")],
+    "Guardrails":  [("create_guardrail", "documented"), ("update_guardrail", "documented")],
+    "Deployments": [], "Sessions": [], "Variables": [("create_variable", "documented"), ("update_variable", "documented")],
 }
 EVAL_CLASSES = ["ToolEvals", "SimulationEvals", "CallbackEvals", "GuardrailEvals"]
 CLI_SUBCOMMANDS = ["lint", "push", "pull", "migrate", "test-tools", "test-callbacks", "push-eval"]

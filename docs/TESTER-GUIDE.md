@@ -71,8 +71,9 @@ Send the filled template back (Slack/email/issue). Short and specific beats poli
 
 ## Known limitations (so you don't report these as surprises)
 - The committed `examples/` are **authored reference runs**, not live transcripts.
-- cxas-scrapi method names are **modeled on the docs** — the smoke test is how we pin them
-  to your installed version; `create_or_update` in particular is an assumed name.
+- cxas-scrapi API was **verified against an installed package** (`create_app`/`update_app`,
+  `create_agent`, `create_tool`, etc.; `list_apps`/`get_agents_map` confirmed). Run
+  `smoke-test.py` to re-pin against your exact version. Deploys use the `cxas` CLI, not these.
 - It has **not yet been run end-to-end on a live GCP project** — you may be the first; that's
   the point of this round.
 - Voice: simulations run in `modality="audio"` (tests the TTS/STT path, not raw acoustics).
