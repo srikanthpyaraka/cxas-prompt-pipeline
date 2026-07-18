@@ -15,11 +15,11 @@ as YAML in a sibling `evals/` folder (Stage 5 fills that):
   cxas_app/<AppName>/
     app.json                                # displayName, rootAgent, variableDeclarations[], loggingSettings, evaluationMetricsThresholds, timeZoneSettings
     agents/<Agent_DisplayName>/
-      <Agent_DisplayName>.json              # displayName, instruction:"agents/<A>/instruction.txt", tools:[toolDisplayName], childAgents:[subAgentDisplayName], before/afterModel|Tool|AgentCallbacks:[{pythonCode:path, description}]
+      <Agent_DisplayName>.json              # name(==displayName==dir), displayName, instruction:"agents/<A>/instruction.txt", tools:[toolDisplayName], childAgents:[subAgentDisplayName], before/afterModel|Tool|AgentCallbacks:[{pythonCode:path, description}]  (NO model field — see modelSettings in app.json)
       instruction.txt                       # the playbook instructions live HERE, not inline in JSON
       before_model_callbacks/before_model_callbacks_01/python_code.py   # (and after_tool_/after_model_/before_agent_ as needed)
     tools/<tool_name>/
-      <tool_name>.json                      # displayName + ONE of: pythonFunction{name,pythonCode:path,description} | openApiTool{...} | dataStoreTool{...}
+      <tool_name>.json                      # name==displayName==dir (snake_case!) + ONE of: pythonFunction{name,pythonCode:path,description} | openApiTool{...} | dataStoreTool{...}
       python_function/python_code.py         # for python tools
   evals/                                     # Stage 5 writes these (foundry authoring format, YAML)
     goldens/*.yaml   simulations/*.yaml   callback_tests/...
@@ -28,9 +28,9 @@ Key rules that people get wrong:
 - **Sub-agents** are the root/parent agent's `childAgents: []` (display names), not a folder.
 - **Variables** are declared in `app.json` `variableDeclarations` (each: `name`, `description`,
   `schema:{type: OBJECT|STRING|…, default}`), not a `variables/` folder.
-- **`rootAgent`** in app.json names the steering agent by displayName. **Model / generative
-  settings** (e.g. gemini-2.5-flash, gemini-3-flash) are set per the console/pull — often an
-  app-level default rather than in each agent JSON; don't invent per-agent model keys.
+- **`rootAgent`** in app.json names the steering agent by displayName. **Model lives in
+  `app.json.modelSettings`** (app-level; models gemini-2.5-flash / gemini-3-flash /
+  gemini-3.1-flash-live) — there is NO `model` field on an agent; don't add one.
 - **Evals authoring lives in the sibling `evals/` folder as YAML** (Stage 5). The JSON
   `evaluations/` + `evaluationExpectations/` folders are the *pulled* platform form; thresholds
   live in app.json `evaluationMetricsThresholds`.

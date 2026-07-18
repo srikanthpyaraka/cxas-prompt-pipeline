@@ -58,6 +58,21 @@ Tester ran it and reported: *"eval format correct, but no evaluation files creat
 real app + evals. This directly addresses the tester's two failures. Still requires a live
 run to confirm end-to-end on their project.
 
+## Round 4 — "nothing assumed" pass (verified against an installed package)
+`cxas_scrapi` became installable, so every assumption was checked, not guessed:
+
+| # | Was assumed | Verified result |
+|---|-------------|-----------------|
+| R4-1 | `create_or_update` method | **Wrong** — real methods are `create_app`/`update_app`, `create_agent`, `create_tool`, `create_guardrail`, `create_variable`. Smoke test: 33 pass / 0 warn. |
+| R4-2 | `model` is an agent field | **Wrong** — model lives in `app.json.modelSettings` (app-level). Removed from agent JSON in ground-truth/Build/scaffolder. |
+| R4-3 | tool naming | **Confirmed rule:** tool `name`==`displayName`==directory (snake_case) or push fails "Reference not found." Scaffolder now writes `name`. |
+| R4-4 | `cxas push-eval` accepts the foundry golden YAML | **Confirmed** — `EvalUtils.load_golden_evals_from_yaml` models (`Turn`=user/agent/tool_calls, `Conversation`=…/expectations/tags) match our YAML. |
+| R4-5 | model IDs | **Confirmed** in-repo: gemini-2.5-flash, gemini-3-flash, gemini-3.1-flash-live. |
+
+**Explicitly still unverified** (now labeled as such in ground-truth, not asserted): the internal
+bodies of `openApiTool`/`dataStoreTool`, the guardrail JSON schema, and `environment.json`.
+These say "confirm against a real pull" rather than presenting a guess as fact.
+
 ## Still-open smaller items (backlog)
 - Vertical question banks for the interview (retail/telco/airline/banking) so it asks the
   5 questions that matter, faster.

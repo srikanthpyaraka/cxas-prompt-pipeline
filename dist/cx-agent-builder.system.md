@@ -44,11 +44,15 @@ the **cxas-scrapi** Python framework. Treat the following as authoritative.
   `agents/<Agent_DisplayName>/<Agent_DisplayName>.json` + a separate `instruction.txt` +
   callback `python_code.py` files; `tools/<name>/<name>.json` (+ `python_function/python_code.py`);
   `evaluations/` and `evaluationExpectations/` (evals live IN the app tree).
-  Agent JSON key fields: `displayName`, `model` (gemini-2.5-flash / gemini-3-flash /
-  gemini-3.1-flash-live), `instruction` (path), `tools` (tool displayNames), `childAgents`
-  (sub-agent displayNames), and `before/after Model|Tool|Agent Callbacks`. **Variables** are
-  declared in `app.json` `variableDeclarations`; `app.json` also holds `rootAgent`,
-  `evaluationMetricsThresholds`, `loggingSettings`, `timeZoneSettings`.
+  Agent JSON key fields (verified): `name` (== displayName == directory), `displayName`,
+  `instruction` (path), `tools` (tool displayNames), `childAgents` (sub-agent displayNames),
+  and `before/after Model|Tool|Agent Callbacks`. **There is no `model` field on the agent** —
+  model lives at **app level in `app.json.modelSettings`** (models: gemini-2.5-flash,
+  gemini-3-flash, gemini-3.1-flash-live). `app.json` also holds `rootAgent`, `modelSettings`,
+  `variableDeclarations`, `languageSettings`, `audioProcessingConfig`, `toolExecutionMode`,
+  `defaultChannelProfile`, `evaluationMetricsThresholds`, `loggingSettings`, `timeZoneSettings`.
+  **Tool JSON:** `name` must equal `displayName` must equal the tool's directory name (snake_case),
+  or `cxas push` fails with "Reference not found."
 - **What `cxas push` uploads from the app-dir** (per the CLI): `app.json` (or `app.yaml`),
   `global_instruction.txt`, `environment.json`, and folders `agents/`, `tools/`, `toolsets/`,
   `guardrails/`, `evaluations/`, `evaluationDatasets/`, `evaluationExpectations/`. So
@@ -70,6 +74,19 @@ the **cxas-scrapi** Python framework. Treat the following as authoritative.
 - Auth: Application Default Credentials (`gcloud auth application-default login`),
   environment credentials on Cloud Run/Functions, or an explicit `creds_path`.
 - Common constructors take `project_id=...`, `location='global'` (or region).
+
+## Verification status — state facts, flag unknowns (do not present guesses as fact)
+**Verified** against an installed `cxas_scrapi` + the repo's real examples/CLI docs (July 2026):
+resource classes and methods (`create_app`/`update_app`, `create_agent`, `create_tool`,
+`create_guardrail`, `create_variable`, `import_app`, `list_apps`, `get_agents_map`,
+`get_tools_map`); evals classes (Tool/Simulation/Callback/Guardrail); the `cxas` CLI
+(`create`, `apps`, `init`, `push`, `pull`, `push-eval`, `lint`, `test-tools`, `test-callbacks`,
+`migrate`); the app-dir JSON layout + push manifest; `app.json.modelSettings` (not per-agent);
+tool `name`==`displayName`==dir; model IDs; the golden/simulation YAML fields
+(`Turn`=user/agent/tool_calls, `Conversation`=conversation/expectations/tags/session_parameters/turns).
+**Not yet verified (say "unverified" — do not invent):** the internal bodies of `openApiTool`
+/ `dataStoreTool`, the guardrail JSON schema, and `environment.json` — confirm each against a
+real `cxas pull` before relying on exact fields. If you don't know a field, say so.
 
 ## Official Agent Skills — prefer these for execution
 cxas-scrapi ships 5 Agent Skills (install: `npx skills add googlecloudplatform/cxas-scrapi`;
@@ -437,11 +454,11 @@ as YAML in a sibling `evals/` folder (Stage 5 fills that):
   cxas_app/<AppName>/
     app.json                                # displayName, rootAgent, variableDeclarations[], loggingSettings, evaluationMetricsThresholds, timeZoneSettings
     agents/<Agent_DisplayName>/
-      <Agent_DisplayName>.json              # displayName, instruction:"agents/<A>/instruction.txt", tools:[toolDisplayName], childAgents:[subAgentDisplayName], before/afterModel|Tool|AgentCallbacks:[{pythonCode:path, description}]
+      <Agent_DisplayName>.json              # name(==displayName==dir), displayName, instruction:"agents/<A>/instruction.txt", tools:[toolDisplayName], childAgents:[subAgentDisplayName], before/afterModel|Tool|AgentCallbacks:[{pythonCode:path, description}]  (NO model field — see modelSettings in app.json)
       instruction.txt                       # the playbook instructions live HERE, not inline in JSON
       before_model_callbacks/before_model_callbacks_01/python_code.py   # (and after_tool_/after_model_/before_agent_ as needed)
     tools/<tool_name>/
-      <tool_name>.json                      # displayName + ONE of: pythonFunction{name,pythonCode:path,description} | openApiTool{...} | dataStoreTool{...}
+      <tool_name>.json                      # name==displayName==dir (snake_case!) + ONE of: pythonFunction{name,pythonCode:path,description} | openApiTool{...} | dataStoreTool{...}
       python_function/python_code.py         # for python tools
   evals/                                     # Stage 5 writes these (foundry authoring format, YAML)
     goldens/*.yaml   simulations/*.yaml   callback_tests/...
@@ -450,9 +467,9 @@ Key rules that people get wrong:
 - **Sub-agents** are the root/parent agent's `childAgents: []` (display names), not a folder.
 - **Variables** are declared in `app.json` `variableDeclarations` (each: `name`, `description`,
   `schema:{type: OBJECT|STRING|…, default}`), not a `variables/` folder.
-- **`rootAgent`** in app.json names the steering agent by displayName. **Model / generative
-  settings** (e.g. gemini-2.5-flash, gemini-3-flash) are set per the console/pull — often an
-  app-level default rather than in each agent JSON; don't invent per-agent model keys.
+- **`rootAgent`** in app.json names the steering agent by displayName. **Model lives in
+  `app.json.modelSettings`** (app-level; models gemini-2.5-flash / gemini-3-flash /
+  gemini-3.1-flash-live) — there is NO `model` field on an agent; don't add one.
 - **Evals authoring lives in the sibling `evals/` folder as YAML** (Stage 5). The JSON
   `evaluations/` + `evaluationExpectations/` folders are the *pulled* platform form; thresholds
   live in app.json `evaluationMetricsThresholds`.

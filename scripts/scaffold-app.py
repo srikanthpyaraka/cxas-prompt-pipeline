@@ -44,7 +44,7 @@ def main():
     for ag in spec.get("agents", []):
         name = ag["displayName"]
         d = f"{app_dir}/agents/{name}"
-        node = {"displayName": name, "instruction": f"agents/{name}/instruction.txt"}
+        node = {"name": name, "displayName": name, "instruction": f"agents/{name}/instruction.txt"}
         for k in ("tools", "childAgents"):
             if ag.get(k): node[k] = ag[k]
         w(f"{d}/instruction.txt", ag.get("instruction", ""))
@@ -56,7 +56,7 @@ def main():
         w(f"{d}/{name}.json", node)
 
     for t in spec.get("tools", []):
-        name = t["displayName"]; node = {"displayName": name}
+        name = t["displayName"]; node = {"name": name, "displayName": name}  # name==displayName==dir
         for key, block in t.items():
             if key == "displayName": continue
             if key == "pythonFunction" and "code" in block:
